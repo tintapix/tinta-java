@@ -1,0 +1,9 @@
+package Molygon;
+
+public interface moltIWindow {
+
+	public String  getWndName();
+	
+	public String  getWndName();	
+	
+}

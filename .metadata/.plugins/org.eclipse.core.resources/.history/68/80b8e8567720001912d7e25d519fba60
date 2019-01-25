@@ -1,0 +1,33 @@
+/**
+ * Copyright (C) 2011 - 2019 Mikhail Evdokimov 
+ * tintapix.com
+ * molygon@gmail.com
+ */
+package com.tinta.common;
+import  java.io.IOException;
+
+/**
+ * Interface for wrapping the configuration parsers
+ */
+public interface molyConfigParser {
+	
+	/*
+	 * If the path is not absolute trying to find in folder with the application 
+	 * */
+	public boolean init( String path )throws IOException;
+	
+	public boolean getValBool(String valName, boolean def);
+	
+	public double getValNumber(String valName, int def);
+	
+	public String getValString(String valName, String def);
+	
+	public void setValBool(String valName, boolean val);
+	
+	public void setValNumber(String valName, double val);
+	
+	public void setValString(String valName, String val);
+	
+	public void savedata() throws IOException;	
+	
+}

@@ -1,0 +1,36 @@
+package Molygon;
+
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.events.*;
+
+
+public class molyAWTWindow extends molyWindow {
+
+	private Shell mWindow;
+	
+	public molyAWTWindow(String name , molyPosition pos, molyPosition size , Display disp, int style){
+		super(name, pos, size);
+		
+		if(style ==  -1)
+			style = SWT.CLOSE | SWT.RESIZE;
+				
+		mWindow = new Shell(disp);
+	}
+	
+	public molyAWTWindow(String name , molyPosition pos, molyPosition size , Shell parWnd, , int style){
+		super(name, pos, size);
+		
+		if(style ==  -1)
+			style = SWT.CLOSE | SWT.RESIZE;
+		
+		mWindow = new Shell(parWnd);
+	}
+	
+}

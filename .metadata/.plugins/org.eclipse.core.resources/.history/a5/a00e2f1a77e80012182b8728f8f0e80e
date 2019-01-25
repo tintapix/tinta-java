@@ -1,0 +1,305 @@
+package Molygon;
+
+
+import java.util.*;
+
+import javax.swing.*;
+
+import Molygon.PasswDialog.action;
+
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseAdapter;
+import java.io.*;
+
+public class Aes256Application {
+	
+	static final String mAppName = "DataEncryptor Aes256 Molygon(c)";
+    static JFrame aWindow = new JFrame(mAppName);
+    
+    
+    static JTextArea   mTextArea;
+   // static JTextField  mFileText;        
+    static JButton mBtnFileChoose;
+    static JButton mBtnFileSave;
+    
+    static JList mListFiles;
+    static String mPathCurrent = "";
+   
+    static private File path;
+    static private Vector<File> files;     
+    static private PasswDialog mPasswDlg;
+    static private byte[] mData;
+        
+    
+static void setPasswText(char [] text){	
+	molyCrypto.InitCrypto(text);	
+}
+
+static void SaveToFile() {
+			
+}
+static void UpdateHeader(String errorText){
+	
+	
+	aWindow.setTitle(mAppName + errorText);
+	
+    }
+	
+    static String GetFileExtFromPath(String path){
+        
+		String extension = new String();
+		int indexDot = path.lastIndexOf(".");
+		if(indexDot != -1){
+		    extension = path.substring( indexDot + 1, path.length() );
+		}
+		
+		return extension;
+    }
+    
+    
+    static  public void Seek(String pathname) throws IOException {
+        path = new File(pathname);
+        
+        if (!path.exists()) {
+            throw new IOException("Cannot access " + pathname + ": No such file or directory");
+        }
+        
+        File[] filesTemp; 
+        
+        if (path.isFile() ) {
+            filesTemp = new File[]{path};            
+        } else {            
+            filesTemp = path.listFiles();         
+        }
+               
+        files = new Vector<File>();              
+        for(int i = 0; i < filesTemp.length; i++) {
+            if(GetFileExtFromPath(filesTemp[i].getPath()).equals("dat")) {
+        	files.add(filesTemp[i]);
+            }
+        }        
+        
+    }    
+   private static byte[] ReadFromFile(String fileName) throws IOException
+   {  
+	  if(fileName.length() == 0)
+		   return null;
+	   
+	   
+      File f = new File(fileName);
+      byte[] bytes = new byte[(int) f.length()];
+      RandomAccessFile raf = new RandomAccessFile(f, "r");
+      raf.readFully(bytes);
+      try
+      {
+         raf.close();         
+      }
+      catch (IOException e)
+      {
+         
+      }
+
+      return bytes;
+   }
+   
+   
+   private static void WriteToFile(String fileName) throws IOException
+   {  
+	  
+	   if(fileName.length() == 0)
+		   return;
+      //File f = new File(fileName);
+    //  byte[] bytes = new byte[(int) f.length()];
+      //RandomAccessFile raf = new RandomAccessFile(f, "r");
+	   FileOutputStream fos = new FileOutputStream(fileName);
+	   fos.write((new String()).getBytes());
+	   fos.write(mData);
+      
+      try
+      {
+    	  fos.close();
+    	  mData = null;
+    	  Aes256Application.mTextArea.setText("");
+    	 
+    	  UpdateHeader("");
+    	  
+      }
+      catch (IOException e)
+      {
+         
+      }      
+   }
+   
+   
+    //static String GetFile
+    
+    static void FormList(JList list){		
+        if(files != null)
+    	list.setListData(files);     	
+    }
+    
+    static void EnableControls(boolean bBlockButtons){	
+    	
+    	Aes256Application.mTextArea.setEnabled(bBlockButtons);
+    	Aes256Application.mBtnFileChoose.setEnabled(bBlockButtons);
+    	Aes256Application.mBtnFileSave.setEnabled(bBlockButtons);
+    	
+    }
+    
+    static void GetData(){    	
+    	if(mData.length == 0 )
+    		return;
+    	String textData = new String( molyCrypto.DencryptData(mData) );    	 
+    	Aes256Application.mTextArea.setText(textData);
+    	Aes256Application.mTextArea.requestFocus();
+    	
+    	
+    }
+    
+    static void SaveData() {    	
+    	
+    	if( Aes256Application.mTextArea.getText().length() == 0 )
+    		return;
+    	
+    	Aes256Application.mData  = molyCrypto.EncryptData( Aes256Application.mTextArea.getText().getBytes() );
+    	
+    	try {			
+			WriteToFile( Aes256Application.mPathCurrent );
+		}
+		catch(IOException exc){			
+		}    	
+    }    
+   
+    public static void main(String[] args) {	
+	
+	class MouseListHandler extends MouseAdapter {	    
+	    public void mouseClicked(MouseEvent ev)  {
+			int indexSelected =  mListFiles.getSelectedIndex();
+			if(indexSelected == -1)
+			    return;		
+			File toParse  = files.get(indexSelected);		
+			mPathCurrent = toParse.getPath();
+			UpdateHeader("Работа с файлом: " + Aes256Application.mPathCurrent);
+			EnableControls(true);
+			
+	    }
+	    
+	}
+	
+	class MouseBtnFileSelectHandler extends MouseAdapter {	     
+	   
+	    public void mouseClicked(MouseEvent ev) {
+		
+	    	int indexSelected =  mListFiles.getSelectedIndex();
+			if(indexSelected == -1)
+			    return;		
+			
+			File toParse  = files.get(indexSelected);		
+			Aes256Application.mPathCurrent = toParse.getPath();
+			
+			try {				
+				Aes256Application.mData = ReadFromFile(Aes256Application.mPathCurrent);
+				
+			}
+			catch(IOException exc){			
+				Aes256Application.mPathCurrent = "";
+			}		
+	    	
+	    	Point p = aWindow.getLocation(); 
+	    	p.x = p.x + aWindow.getSize().width / 2;
+	    	p.y = p.y + aWindow.getSize().height / 2;
+	    	mPasswDlg.setModal(true);
+	    	mPasswDlg.showDialog(p, action.TO_DECODE);		        
+	    }
+	    
+	}	
+	
+	class MouseBtnSaveToFileHandler extends MouseAdapter {
+	    
+	    public void mouseClicked(MouseEvent ev) {
+	    	
+	    	Point p = aWindow.getLocation(); 
+	    	p.x = p.x + aWindow.getSize().width / 2;
+	    	p.y = p.y + aWindow.getSize().height / 2;
+	    	mPasswDlg.setModal(true);
+	    	mPasswDlg.showDialog(p, action.TO_ENCODE);	
+	    }
+	    
+	}
+		
+	String fileDir = new File("").getAbsolutePath();
+	try {
+	    Seek(fileDir);
+	}
+	catch(IOException e){
+		UpdateHeader(e.getMessage());
+	}
+	     
+	mPasswDlg = new PasswDialog();
+	    
+    Toolkit theKit = aWindow.getToolkit(); // Get the window toolkit
+   Dimension wndSize = theKit.getScreenSize(); // Get screen size   
+        // 
+    aWindow.setBounds(wndSize.width/4, wndSize.height/4,    wndSize.width/2, wndSize.height/2); // Size        
+    aWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+    GridBagLayout gridbag = new GridBagLayout(); // Create a layout manager
+    GridBagConstraints constraints = new GridBagConstraints();
+    aWindow.getContentPane().setLayout(gridbag); // Set the container layout mgr             
+      
+       //constraints.weightx = constraints.weightx = 5.0;
+    constraints.fill = GridBagConstraints.BOTH;        
+	constraints.weighty = 0.5;
+	constraints.weightx = 1;
+    constraints.gridx = 0;
+    constraints.gridy = 0;	
+    
+    
+    mTextArea = new JTextArea(20, 20);
+    
+    JScrollPane scrollPane = new JScrollPane(mTextArea);
+    
+    
+    
+	
+    Font fontWordText = new Font("Serif", Font.PLAIN, 24);
+    UIManager.put("Button.font", fontWordText);
+	
+    //mFileText = new JTextField();
+	gridbag.setConstraints(scrollPane, constraints);    
+	aWindow.getContentPane().add(scrollPane);
+	//mFileText.addMouseListener(new MouseBtnNextWordHandler());		
+		
+	Font fontFile = new Font("Serif", Font.BOLD, 14);
+    UIManager.put("Button.font", fontFile);
+    
+    constraints.gridy = 1;
+	constraints.weighty = 0.01;
+	mBtnFileChoose = new JButton("Прочитать файл");
+	gridbag.setConstraints(mBtnFileChoose, constraints);	
+	aWindow.getContentPane().add(mBtnFileChoose);
+	mBtnFileChoose.addMouseListener(new MouseBtnFileSelectHandler());
+	
+	constraints.gridy = 2;	
+	constraints.weighty = 0.01;
+	mBtnFileSave = new JButton("Сохранить файл");
+	gridbag.setConstraints(mBtnFileSave, constraints);	
+	aWindow.getContentPane().add(mBtnFileSave);
+	mBtnFileSave.addMouseListener(new MouseBtnSaveToFileHandler());	
+	
+	constraints.gridy = 3;	
+	mListFiles = new JList();
+	FormList(mListFiles);
+	gridbag.setConstraints(mListFiles, constraints);	
+	aWindow.getContentPane().add(mListFiles);	
+        
+	mListFiles.addMouseListener(new MouseListHandler());
+	
+	EnableControls(false);
+        aWindow.setVisible(true); // Display the window
+    }   
+    
+
+
+}

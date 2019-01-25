@@ -1,0 +1,14 @@
+package Molygon;
+
+public interface molyIWindow {
+
+	public String  getWndName();
+	
+	/*Parsing window position from config file
+	 * */
+	public molyPosition parseWndPos();
+	
+	
+	
+	
+}

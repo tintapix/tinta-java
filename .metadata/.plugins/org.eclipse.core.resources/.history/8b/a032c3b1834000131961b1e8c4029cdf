@@ -1,0 +1,15 @@
+package Molygon;
+
+public interface molyIWindow {
+
+	
+	public String  getWndName();
+
+	public molyPosition getWndPos();	
+	
+	public molyPosition getWndSize();
+	
+	
+	
+	
+}

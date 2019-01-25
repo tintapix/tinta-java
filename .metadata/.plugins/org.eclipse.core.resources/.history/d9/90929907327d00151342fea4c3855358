@@ -1,0 +1,11 @@
+package demo;
+
+/*
+ * Описывает тип участника сцены
+ */
+public enum Unittype {
+
+	UNIT_ENEMY,
+	UNIT_FRIEND,
+	UNIT_NPC, //Независимый персонаж
+}

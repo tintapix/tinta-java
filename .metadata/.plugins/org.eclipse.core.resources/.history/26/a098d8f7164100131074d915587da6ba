@@ -1,0 +1,24 @@
+package Molygon;
+
+import org.eclipse.swt.widgets.Shell;
+
+public class molySWTConsole {
+	
+	public Shell mShell;
+	public molyAWTConsole(Shell parent, int style){
+	
+		mShell = new Shell(parent,style);
+		mShell.setSize(100, 100);
+		mShell.setLocation(300, 300);
+				
+		initialize();
+	}
+	
+	public void show(){
+		mShell.open();
+	}
+	private void initialize() {
+		
+	}
+
+}

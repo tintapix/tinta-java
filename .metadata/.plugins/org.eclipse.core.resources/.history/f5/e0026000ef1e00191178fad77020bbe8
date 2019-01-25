@@ -1,0 +1,36 @@
+package com.tinta;
+
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.Condition;
+
+
+public class Waiter extends Thread
+{
+  private Lock lock;
+  private Condition condition;
+
+  public Waiter(Lock lock, Condition condition)
+  {
+    this.lock = lock;
+    this.condition = condition;
+  }
+
+  public void run()
+  {
+    try
+    {
+      lock.lock();
+      System.out.println(this.getName() + " awaits");
+      condition.await();
+      System.out.println(this.getName() + " signalled");
+    }
+    catch(InterruptedException ex)
+    {
+      System.out.println(this.getName() + " interrupted");
+    }
+    finally
+    {
+      lock.unlock();
+    }
+  }
+}

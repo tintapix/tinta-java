@@ -1,0 +1,51 @@
+package Molygon;
+
+import java.util.*;
+
+import Molygon.molySingleton.SingletonHolder;
+
+public class molyApp {
+
+	private Map<String, molyCanvas> mImages;
+	
+	String mSelectedImage;
+	
+	boolean executeCommand( String command ){
+		
+		boolean rez = false;		
+		if( !mSelectedImage.equals("") ){
+			
+		}				 
+		return rez;
+	}
+	
+	void selectImage(String image){
+		mSelectedImage = image;
+	}
+	
+	boolean deleteImage(String image){
+		return mImages.remove(image) != null;		
+	}
+	
+	boolean addImage(String image, molyCanvas canvas){
+		return mImages.put(image, canvas)== null;		
+	}
+	
+	private static class molyAppHolder {
+		   
+	     private static final molyApp INSTANCE = new molyApp();
+	     
+	   }
+	
+	public static molyApp getInstance() {
+	     return molyAppHolder.INSTANCE;
+	   }
+	
+	
+	
+	molyCanvas getImage(String image){
+		return mImages.get(image);
+	}
+	
+	
+}

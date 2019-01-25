@@ -1,0 +1,10 @@
+package Molygon;
+
+public class molyConsole {
+	
+	
+	void clearConsole() {
+		
+	}
+	
+}

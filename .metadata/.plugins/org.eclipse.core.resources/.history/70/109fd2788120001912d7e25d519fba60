@@ -1,0 +1,33 @@
+package com.tinta.common.tintatreeconfig;
+
+public class ConfigTest {
+
+	public static void main( String[] args ) {	
+	molyTreeConfig cfg = new molyTreeConfig();
+	
+	try {
+		cfg.parse("D:/mya/note/TexSpringv12/bin/Debug/test1.lua");
+		
+		String strVal = cfg.getValString("ass1");
+		double dbl = cfg.getValDouble("ass2");
+		boolean  bVal = cfg.getValBoolean("ass3");
+		
+        double valDbl2 = 2.0;
+        
+        dbl =  cfg.getValDouble("va.[0]");
+        //err = mConf.getError();
+        String valStr1;
+        strVal =  cfg.getValString("vb.[1]");
+        
+        
+        cfg.save("D:/mya/note/TexSpringv12/bin/Debug/test1.out");
+        //err = mConf.getError();
+        
+        int t = 210;
+	}
+	catch(molyConfigException e){
+		System.out.print(e.getMessage());
+	}
+	}
+	
+}

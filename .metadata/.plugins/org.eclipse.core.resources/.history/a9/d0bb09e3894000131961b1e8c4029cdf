@@ -1,0 +1,14 @@
+package Molygon;
+
+import org.eclipse.swt.widgets.Shell;
+
+public class molyAWTWindow extends molyWindow {
+
+	private Shell mWindow;
+	
+	public molyAWTWindow(String name , molyPosition pos, molyPosition size , Display disp){
+		super(name, pos, size);
+		mWindow = new Shell();
+	}
+	
+}

@@ -1,0 +1,150 @@
+package com.tinta.common.socket;
+
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.tinta.build.tintaBuild;
+import com.tinta.build.tintaBuild.molyDebugMode;
+import com.tinta.common.molyILogger;
+import com.tinta.common.tintaDebug;
+import com.tinta.common.molyILogger.molyMsgLevel;
+
+public class tintaServerSocket  {
+	
+	
+	
+	public tintaServerSocket(){
+		try {
+			mServer = new ServerSocket();
+		}
+		catch ( IOException ex ){
+			
+			molyILogger log = tintaDebug.getLogger();			
+			if( log != null )
+				log.logMsg( ex.getMessage(), molyMsgLevel.MSG_EXCEPTION );
+		}
+	}
+	
+	public tintaServerSocket( int port ){		
+		create( port );
+	}
+	
+	public void addClientHandler(tintaSocketSet.tintaIClientAction h){
+		mClients.addClientHandler(h);
+	}
+	
+	public void removeClientHandler(tintaSocketSet.tintaIClientAction h){
+		mClients.removeClientHandler(h);
+	}
+	
+	public long  getNextClient( boolean first){
+		return mClients.getNextClient(first).getId();
+		
+	}
+	
+	public void addReciveHandler( long recipient, tintaSocketSet.IReceiveHandler handler ){
+		mClients.addReceiver( recipient, handler );		
+	}
+	
+	public void removeReciveHandler( long recipient, tintaSocketSet.IReceiveHandler handler ){
+		mClients.removeReceiver( recipient, handler );		
+	}
+		
+	public boolean sendData( long recipient , final byte[] data ) {
+		if( !closed() )
+			return mClients.sendData( recipient, data );
+		return false;
+	}	
+	
+	public void create( int port ){
+		
+		mPort = port;
+		
+		close( );
+		try {
+			mServer = new ServerSocket(port);
+			mActive = true;				
+			
+			Runnable accepct = new Runnable()
+			{		
+				public void run()
+				{				
+					while( mActive ){					
+										 
+						try {
+							
+							Socket connection = mServer.accept();		
+							tintaClientSocket sock = new tintaClientSocket(connection);
+							
+							long id = mClients.addConnection( sock );
+							
+							if(id != -1 ){
+								if( tintaBuild.mMode == molyDebugMode.DEBUG ){
+									molyILogger log = tintaDebug.getLogger();			
+									if( log != null )
+										log.logMsg( "Client  " + id + " connected ", molyMsgLevel.MSG_INFO );
+								}	
+							}
+							
+						} catch( SocketException ex ){
+							
+							
+						} catch ( IOException ex ) {
+							molyILogger log = tintaDebug.getLogger();			
+							if( log != null )
+								log.logMsg( ex.getMessage(), molyMsgLevel.MSG_EXCEPTION );
+						}
+					}				
+				}
+			};	
+			mAccepter = new Thread(accepct);
+			mAccepter.start();			
+			
+		}
+		catch ( IOException ex ){
+			
+			molyILogger log = tintaDebug.getLogger();			
+			if( log != null )
+				log.logMsg( ex.getMessage(), molyMsgLevel.MSG_EXCEPTION );
+		}
+	}
+	
+	public void close(  ){
+		try {
+			if( !closed() ){
+				
+				mActive = false;
+				mClients.clear();				
+				mServer.close();
+				
+				molyILogger log = tintaDebug.getLogger();			
+				if( log != null )
+					log.logMsg( "Server connection closed with port " + mPort );
+				
+				mPort = -1;
+			}
+		}
+		catch ( IOException ex ){
+			molyILogger log = tintaDebug.getLogger();			
+			if( log != null )
+				log.logMsg( ex.getMessage(), molyMsgLevel.MSG_EXCEPTION );
+		}
+	}	
+	public boolean closed() {
+		return mServer == null || !mActive || mServer.isClosed();
+	}
+	
+	private ServerSocket   mServer = null;	
+	
+	private boolean 	   mActive = false;
+	
+	private int 		   mPort = -1;
+	
+	private Thread         mAccepter = null; 
+	
+	private tintaSocketSet mClients = new tintaSocketSet();	
+}

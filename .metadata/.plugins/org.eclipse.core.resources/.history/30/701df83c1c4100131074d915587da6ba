@@ -1,0 +1,10 @@
+package Molygon;
+
+public class molyApp {
+
+	boolean executeCommand(String command){
+		boolean rez = true; 
+		return rez;
+	}
+	
+}

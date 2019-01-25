@@ -1,0 +1,26 @@
+
+/*	
+	Package of tree config classes, includes parser and request handler
+	Example of tree config file:
+*/
+
+Value1 {
+	"Name",
+	10,
+	100,
+	100.100,
+	false // true if bla bla bla
+},
+Value2 {
+	value_name = "MyName",
+	value_speed = 100.0100,
+	value_id = 10,
+	alive = true,
+	weapon {
+		"gun",
+		power = 1000.5
+	}
+},
+1000,
+"DataText",
+true

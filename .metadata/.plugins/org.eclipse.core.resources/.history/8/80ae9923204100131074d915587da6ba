@@ -1,0 +1,14 @@
+package Molygon;
+
+public class molyApp {
+
+	private molyImgBuffer;
+	
+	
+	boolean executeCommand( String command ){
+		boolean rez = true; 
+		return rez;
+	}
+	
+	
+}

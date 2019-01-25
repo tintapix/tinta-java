@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;Tinta/src/com/tinta/tintaLuaApp/tintaLuaInteract.java&apos; to &apos;tintaInteract.java&apos;" description="Rename resource &apos;tintaLuaInteract.java&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/com/tinta/tintaLuaApp/tintaLuaInteract.java" name="tintaInteract.java" stamp="1548404344587" updateReferences="true"/>
+</session>

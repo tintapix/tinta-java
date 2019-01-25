@@ -1,0 +1,32 @@
+package Molygon;
+
+public class molyWindow implements molyIWindow {
+
+	private String 		 mName = "";
+	private molyPosition mPos;
+	private molyPosition mSize;
+	
+	public molyWindow(String name, molyPosition pos, molyPosition size)	
+	public String  getWndName(){
+		return mName;
+	}
+
+	public molyPosition getWndPos(){
+		return mPos;		
+	}
+	
+	public molyPosition getWndSize(){
+		return mSize;	
+	}
+	
+	
+	public void setWndPos( molyPosition pos ){
+		mPos = pos;
+	}
+	
+	public void setWndSize(molyPosition size){
+		mSize = size;
+	}
+	
+	
+}

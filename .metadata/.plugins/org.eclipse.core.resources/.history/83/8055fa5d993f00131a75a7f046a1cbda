@@ -1,0 +1,38 @@
+package com.molygon;
+
+public class MolyStringUtils {
+
+static public String getFileExtension( String path ){
+	String extension = "";
+
+	int i = path.lastIndexOf('.');
+	if (i > 0) {
+	    extension = path.substring(i+1);
+	}
+	return  extension;
+}
+
+static public String getRemovePathLeaf( String path ){
+	
+	String tempPath = path;
+	int posSlash = tempPath.lastIndexOf("/");
+	if(posSlash > -1){
+		tempPath = tempPath.substring(0, posSlash);
+		return  tempPath;
+	}
+	return path;
+}
+	
+	
+static public String getRemovePathLeaf( String path , String delimiter){
+		
+	String tempPath = path;
+	int posSlash = tempPath.lastIndexOf(delimiter);
+	if(posSlash > -1){
+		tempPath = tempPath.substring(0, posSlash);
+		return  tempPath;
+	}
+	return path;
+}
+	
+}

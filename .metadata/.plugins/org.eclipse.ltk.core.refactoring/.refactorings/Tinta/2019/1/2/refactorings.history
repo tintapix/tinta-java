@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;Tinta/src/com/tinta/urok.java&apos; to &apos;ship.java&apos;" description="Rename resource &apos;urok.java&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/com/tinta/urok.java" name="ship.java" stamp="1547185178040" updateReferences="true"/>
+</session>

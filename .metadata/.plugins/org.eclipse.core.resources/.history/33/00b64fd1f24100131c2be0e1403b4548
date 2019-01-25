@@ -1,0 +1,122 @@
+package Molygon;
+
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+
+
+
+public class molySWTApp extends molySWTWindow {
+		 
+	private molySWTConsole mConsole;
+	private static final String windowName = "MainFrame";
+	private molyApp mApp;
+	
+	public molyApp getApp(){
+		return  mApp;
+	}
+	
+    public molySWTApp(Display display) {
+    	
+    	super(windowName, new molyPosition (100, 100), new molyPosition(800, 800), display, -1);
+    	mApp = new molyApp();   	    	
+    	
+    	setCaption("TexSpring");
+        initUI();                 
+        
+        mWindow.open();
+
+        while ( !mWindow.isDisposed() ) {
+          if ( !display.readAndDispatch() ) {
+            display.sleep();
+          }
+        }
+    }
+
+
+    public void initUI() {
+    	
+      // Buttons
+      /*  Button button1 = new Button(mainFrame, SWT.PUSH);
+        button1.setText("Button");
+        button1.setBounds(20, 50, 80, 30);
+
+        Button button2 = new Button(mainFrame, SWT.PUSH);
+        button2.setText("Button");
+        button2.setSize(80, 30);
+        button2.setLocation(50, 100);
+      */
+    	
+    	 // File menues 
+    	 Menu menuBar = new Menu(mWindow, SWT.BAR);
+         MenuItem cascadeMenu = new MenuItem(menuBar, SWT.CASCADE);
+         cascadeMenu.setText("&File");
+                  
+         
+         Menu fileMenu = new Menu(mWindow, SWT.DROP_DOWN);
+         cascadeMenu.setMenu(fileMenu);
+         
+         MenuItem exitItem = new MenuItem(fileMenu, SWT.PUSH);
+         exitItem.setText("&Save as");
+         mWindow.setMenuBar(menuBar);         
+         
+
+         exitItem = new MenuItem(fileMenu, SWT.PUSH);
+         exitItem.setText("&Exit");
+        
+         
+         
+         // Views 
+         
+         MenuItem cascadeViewsMenu = new MenuItem(menuBar, SWT.CASCADE);
+         cascadeViewsMenu.setText("&Views");
+                  
+         
+         Menu viewsMenu = new Menu(mWindow, SWT.DROP_DOWN);
+         cascadeViewsMenu.setMenu(viewsMenu);
+         
+         MenuItem consoleMenu = new MenuItem(viewsMenu, SWT.PUSH);
+         consoleMenu.setText("&Console");
+                  
+         //         
+         mWindow.setMenuBar(menuBar);               
+
+         exitItem.addSelectionListener(new SelectionAdapter() {
+             @Override
+             public void widgetSelected(SelectionEvent e) {
+            	 mWindow.getDisplay().dispose();
+                 System.exit(0);
+             }
+         });
+         
+         consoleMenu.addSelectionListener(new SelectionAdapter() {
+        	    public void widgetSelected(SelectionEvent e) {
+        	    	mConsole = new molySWTConsole(mWindow, SWT.CLOSE | SWT.RESIZE);        	    	
+        	         
+        	    	mConsole.show();
+        	        //System.out.println("Clear pressed!");  
+        	    }
+        	   
+        	});
+    }
+
+    public static void main( String[] args ) {
+        Display display = new Display();
+        new molySWTApp(display);
+        display.dispose();
+    }
+		
+		
+	
+}
+	
+
+
+
+
+
+

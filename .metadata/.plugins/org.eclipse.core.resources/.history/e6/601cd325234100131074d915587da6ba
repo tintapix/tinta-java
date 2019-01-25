@@ -1,0 +1,21 @@
+package Molygon;
+
+import java.util.*;
+
+public class molyApp {
+
+	private Map<String, molyCanvas> mImages;
+	
+	String mSelectedImage;
+	
+	boolean executeCommand( String command ){
+		boolean rez = false;
+		if(mSelectedImage.equals(""))
+			return rez;
+		
+		 
+		return rez;
+	}
+	
+	
+}

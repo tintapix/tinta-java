@@ -1,0 +1,6 @@
+package Molygon;
+import org.eclipse.swt.widgets.Shell;
+
+public class molyConsol extends Shell {
+
+}

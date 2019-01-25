@@ -1,0 +1,95 @@
+/**
+ * Copyright (C) 2011 - 2017 Evdokimov Mikhail
+ * tintapix.com
+ * molygon@gmail.com
+ */
+
+
+package com.tinta.common.image;
+
+import com.tinta.math.tintaUtilMath;
+
+public class tintaRGB {
+	
+	private static final short channels = 3;	
+	private final short mData [] =  {0, 0, 0};	
+	private int mPacked;
+	
+	private void updatePacked(){
+		mPacked = tintaUtilMath.packColor3(mData[0], mData[1], mData[2]);
+	}
+	
+	public tintaRGB(){}
+	
+	/**
+	 * From packed integer 16
+	 * @param data
+	 */
+	public tintaRGB(  final short data [] ){
+		assert data.length <= channels : "array length";
+		System.arraycopy(data, 0, mData, 0, channels);
+		updatePacked();
+	}
+	
+	public tintaRGB(  final tintaRGB rv ){
+		System.arraycopy(rv.mData, 0, mData, 0, channels);
+		mPacked = rv.mPacked;
+	}
+	
+	public tintaRGB(  short r, short g, short b ){
+		mData[0] = r;
+		mData[1] = g;
+		mData[2] = b;
+		
+		updatePacked();
+	}	
+	
+	public tintaRGB(  final float data [] ){
+		
+		assert data.length <= channels : "array length";
+		
+		mData[0] = tintaUtilMath.floatToByte(data[0]);
+		mData[1] = tintaUtilMath.floatToByte(data[1]);
+		mData[2] = tintaUtilMath.floatToByte(data[2]);
+		
+		updatePacked();
+	}
+	public tintaRGB(  final tintaRGBf rv ){
+		
+		mData[0] = tintaUtilMath.floatToByte(rv.getData()[0]);
+		mData[1] = tintaUtilMath.floatToByte(rv.getData()[1]);
+		mData[2] = tintaUtilMath.floatToByte(rv.getData()[2]);
+		
+		updatePacked();
+	}
+	
+	
+	public final short[] getData(){
+		return mData;
+	}
+	
+	public tintaRGB(  float r, float g, float b ){
+		mData[0] = tintaUtilMath.floatToByte(r);
+		mData[1] = tintaUtilMath.floatToByte(g);
+		mData[2] = tintaUtilMath.floatToByte(b);
+		
+		updatePacked();
+	}
+
+	
+	public int hashCode() {
+		return this.mPacked;
+	} 
+
+	public void setData(int channel, short val){
+		assert channel > 0 && channel < channels : "array boundary error";
+		mData[channel] = val;
+		
+		updatePacked();
+	}
+	
+	public short getData(int channel){
+		assert channel > 0 && channel < channels : "array boundary error";
+		return mData[channel];
+	}	
+}

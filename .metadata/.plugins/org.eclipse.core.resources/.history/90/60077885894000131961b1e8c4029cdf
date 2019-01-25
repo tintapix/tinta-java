@@ -1,0 +1,9 @@
+package Molygon;
+
+public class molyAWTWindow extends molyWindow {
+
+	public molyAWTWindow(String name){
+		
+	}
+	
+}

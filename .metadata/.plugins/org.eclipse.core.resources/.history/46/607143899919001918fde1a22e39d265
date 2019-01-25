@@ -1,0 +1,299 @@
+package com.tinta.tintaLuaApp;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import com.tinta.common.molyILogger;
+import com.tinta.common.tintaDebug;
+import com.tinta.common.tintaIdGen;
+import com.tinta.common.molyILogger.molyMsgLevel;
+import com.tinta.common.socket.tintaClientSocket;
+import com.tinta.common.socket.tintaSocketSet;
+import com.tinta.common.socket.tintaServerSocket;
+
+
+public class tintaLuaInteract 
+					implements tintaSocketSet.tintaIClientAction  {
+	
+	public enum CONNECTION_TYPE{
+		SERVER,
+		CLIENT_LOCAL,
+		CLIENT_REMOTE,
+		LUST_TYPE
+	}
+	
+	public tintaLuaInteract(){
+		
+		mClients.setIdGenerator(mIds);		
+		mClients.addClientHandler(this);
+		
+	}
+	
+	public interface tintaIInteractAction{
+		
+		public void interactAdded( long id );		
+		
+		public void interactRemoved( long id );
+	}
+	
+	public void addReciveHandler( long recipient, tintaSocketSet.IReceiveHandler handler ){
+		
+		for ( tintaServerObject o : mServers ){
+			
+			if( o.mId == recipient ){
+				
+				o.mServer.addReciveHandler(handler);
+				return;
+			}
+			if( o.mServer.hasClient(recipient)  ){
+				// remote connected client
+				o.mServer.addReciveHandler(recipient, handler);
+				return;
+			}
+		}
+		// local client
+		mClients.addReceiver( recipient, handler );			
+	}
+	
+	public void removeReciveHandler( long recipient, tintaSocketSet.IReceiveHandler handler ){
+			
+		if( mClients.hasClient(recipient) )
+			mClients.removeReceiver( recipient, handler );			
+	}
+	
+	public void addInteractHandler( tintaIInteractAction handler ){
+		if( handler != null && !mHandlers.contains( handler ) )
+			mHandlers.add( handler );				
+	}
+	
+	public void removeInteractHandler( tintaIInteractAction handler ){		
+		mHandlers.remove( handler );			
+	}
+	
+	
+	
+	public boolean send( long connection, byte[] data ){			
+		
+		for ( tintaServerObject o : mServers ){
+			
+			if( o.mId == connection ){
+				// connection id is server send all clients 
+				return o.mServer.sendData(data);				
+			}
+			if( o.mServer.hasClient(connection)  ){
+				// client id is client on server
+				return o.mServer.sendData(connection, data);
+			}
+		}
+		// connection id is client connected to the host
+		return mClients.sendData(connection, data);		
+	}
+	
+	private class tintaServerObject {
+	
+		private tintaServerObject( long id , tintaServerSocket server){
+			mId = id;
+			mServer = server;
+		}
+		
+		private long mId = -1;
+		private tintaServerSocket mServer = null;		
+	}
+	
+	public long getConnectId( int pos ){
+		
+		int count = 0;
+		for ( tintaServerObject o : mServers ){
+			if( count == pos ){
+				return o.mId;								
+			}
+			count++;
+		}
+		
+		tintaSocketSet.SocketObject o = mClients.getNextClient(true);
+		
+		while( o.getId() != -1 ){
+			
+			if( count == pos)
+				return o.getId();
+			
+			count++;			
+			o = mClients.getNextClient(false);
+		}
+		
+		
+		return -1;
+	}
+		
+	/**	 
+	 * Returns connection type by identifier
+	 * @param id connection identifier
+	 * @return SERVER , CLIENT_LOCAL , CLIENT_REMOTE, otherwise -1
+	 */
+	public CONNECTION_TYPE getType( long id ){
+		
+		for ( tintaServerObject o : mServers ){
+			if( o.mId == id ){
+				return SERVER;								
+			}
+			if( o.mServer.hasClient(id)){
+				return CLIENT_REMOTE;
+			}
+		}
+		
+		tintaSocketSet.SocketObject o = mClients.getNextClient(true);
+		while( o.getId() != -1 ){
+			
+			if( o.getId() == id )
+				return CLIENT_LOCAL;			
+			o = mClients.getNextClient( false );			
+		}
+		
+		return -1;
+	}
+	
+	public void clientAdded( long id, tintaClientSocket client ){
+		
+		for( tintaIInteractAction h : mHandlers )
+			h.interactAdded( id );
+		
+	}
+	
+	public void clientRemoved( long id ){
+		
+		for( tintaIInteractAction h : mHandlers )
+			h.interactRemoved( id );
+			
+	}
+	
+	public long addServer( int port ){
+		
+		
+		tintaServerSocket server = new tintaServerSocket(port);
+		
+		server.setIdGenerator( mIds );
+		
+		if( server.closed() )
+			return -1;
+		
+		long id = mIds.genId(); 	
+		
+		tintaServerObject obj = new tintaServerObject( id, server); 
+		obj.mServer.addClientHandler( this );
+		
+		mServers.add( obj );
+		molyILogger log = tintaDebug.getLogger();
+		if( log != null )
+			log.logMsg("Server created with id: " + id, molyMsgLevel.MSG_INFO);
+		
+		for(tintaIInteractAction h : mHandlers)
+			h.interactAdded(id);
+		
+		return id;
+		
+	}
+	
+	public long addClient( String host, int port ){		// 		
+		long id =  mClients.addConnection( host, port );
+		
+		if( id != -1 ){
+			for(tintaIInteractAction h : mHandlers)
+				h.interactAdded(id);
+		}
+		
+		return id; 
+	}
+		
+	public long getServerId( long clientId){
+		for ( tintaServerObject o : mServers ){
+						
+			if( o.mServer.hasClient( clientId ) ){
+				// close connected client 
+				return o.mId;
+			}
+		}	
+		
+		return -1;
+	}
+	
+	public boolean hasConnection( long id ){
+		
+		for ( tintaServerObject o : mServers ){
+			
+			if( o.mId == id ){
+				
+				return true;			
+			}
+			if( o.mServer.hasClient( id ) ){
+				// close connected client 
+				return true;
+			}
+		}	
+		
+		return mClients.hasClient(id);
+	}
+	
+	public void close( long id ){
+		
+		boolean removed = false;
+		for ( tintaServerObject o : mServers ){
+			
+			if( o.mId == id ){ 
+				// close server with connected clients
+				o.mServer.close(); 
+				mServers.remove( o );
+				removed = true;
+				break;				
+			}
+			if( o.mServer.hasClient( id ) ){
+				// close connected client 
+				o.mServer.close(id);
+				removed = true;
+				break;
+			}
+		}
+		
+		// close local client 
+		if( !removed ){			
+			removed = mClients.removeConnection(id);						
+		}
+		
+		if( removed ){
+			for( tintaIInteractAction h : mHandlers )
+				h.interactRemoved( id );
+		}	
+		
+	}
+
+	public void close() {
+		
+		for ( tintaServerObject o : mServers ){
+			
+			o.mServer.close();
+			
+			for( tintaIInteractAction h : mHandlers )
+				h.interactRemoved( o.mId );
+			
+			o = null;				
+		}
+		
+		mServers.clear();		
+		
+		mClients.remove();
+	}
+	
+	
+	private List<tintaServerObject> mServers = new ArrayList<tintaServerObject>();
+	
+	private tintaIdGen mIds = new tintaIdGen(0);
+	
+	// callbacks for all connections
+	private tintaSocketSet mClients = new tintaSocketSet();
+	
+	private Set<tintaIInteractAction> mHandlers = new HashSet<tintaIInteractAction>();
+	
+	
+	
+}

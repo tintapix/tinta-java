@@ -1,0 +1,86 @@
+
+package Molygon;
+
+//import java.util.Arrays;
+
+public class molyCrypto {
+	
+	private native boolean aes256Init(byte[] arr);
+	private native byte[] aes256Encrypt(byte[] arr);	
+	private native byte[] aes256Decrypt(byte[] arr);
+	private native void aes256Release();
+	private static molyCrypto mCrypt = new molyCrypto();
+	private static boolean mInited = false;
+	public static short mKeyLength = 32;
+	
+	
+	
+	public static void InitCrypto(char[] word){	
+		
+		byte[] bytes = new String(word).getBytes();
+		
+		if( bytes.length == 0 ){
+			mInited = false;
+			return;
+		}		
+		else if(bytes.length > mKeyLength){
+			mInited = false;
+			//bytes = Arrays.copyOf(bytes, mKeyLength);
+			return;			
+		}	
+		
+		mInited = mCrypt.aes256Init( bytes );
+		
+	}
+	
+	public static byte[] EncryptData(byte[] data){
+		if(mInited == false)
+			return null;
+		
+		return mCrypt.aes256Encrypt(data);
+	}
+	
+	public static byte[] DencryptData(byte[] data){
+		if(mInited == false)
+			return null;
+		
+		return mCrypt.aes256Decrypt(data);
+	}
+	
+	public static void ReleaseCrypto(){
+		if(mInited == true){
+			mCrypt.aes256Release();
+		}
+			
+		
+	}
+	/*public static void main(String[] args) {
+		
+		molyCrypto p = new molyCrypto();
+		byte arr[] = new byte[32];
+		for (int i = 0; i < 32; i++) {
+			arr[i] = 1;
+		}
+		p.aes256Init(arr);
+		byte[] arrIn = {12,11,33,14,12,88,99,64,22,11,23,45,67,42,34,56, 
+						78,90,12,11,13,45,64,44,1 ,5 ,8 ,102,111,41,16,123, 100 };
+		
+		
+		byte[] arrOut =  p.aes256Encrypt(arrIn);
+		//System.out.println(arrOut.length);
+		
+		System.out.println( "Шифрованные :"   + Arrays.toString( arrOut ) );
+		
+		//p.aes256Init(arr);
+		byte[] arrDecifOut = p.aes256Decrypt(arrOut);
+		System.out.println( "Дешифрованные :" + Arrays.toString( arrDecifOut ) );
+		//System.out.println("sum = " + sum);	
+		
+		p.aes256Release();
+	
+	}*/
+	static {
+		System.loadLibrary("molyAes256_d");	}	
+	
+
+}

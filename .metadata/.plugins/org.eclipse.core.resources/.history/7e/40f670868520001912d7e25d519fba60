@@ -1,0 +1,105 @@
+package com.tinta.math;
+
+/**
+ * Matrix 
+ * @author Mikhail Evdokimov
+ *
+ */
+public class tintaMatrix2 {
+	
+	
+	public tintaMatrix2 (){}
+
+
+	public tintaMatrix2 (tintaMatrix2 rv){
+		
+		m_afEntry[0] = rv.m_afEntry[0];
+        m_afEntry[1] = rv.m_afEntry[1];
+        m_afEntry[2] = rv.m_afEntry[2];
+        m_afEntry[3] = rv.m_afEntry[3];
+	}
+
+    
+    public tintaMatrix2  (float fM00, float fM01, float fM10, float fM11){    	
+    	m_afEntry[0] = fM00;
+        m_afEntry[1] = fM01;
+        m_afEntry[2] = fM10;
+        m_afEntry[3] = fM11;
+    }    
+    
+    public void set (float fM00, float fM01, float fM10, float fM11){  
+    	
+    	m_afEntry[0] = fM00;
+        m_afEntry[1] = fM01;
+        m_afEntry[2] = fM10;
+        m_afEntry[3] = fM11;
+    }
+    
+    public void mult ( final tintaMatrix2 rv ){  
+    	
+    	float fEntry[] = {0.f, 0.f, 0.f, 0.f, 0.f};
+    	fEntry[0] = m_afEntry[0]*rv.m_afEntry[0] + m_afEntry[1]*rv.m_afEntry[2];
+    	fEntry[1] = m_afEntry[0]*rv.m_afEntry[1] + m_afEntry[1]*rv.m_afEntry[3];
+    	fEntry[2] = m_afEntry[2]*rv.m_afEntry[0] + m_afEntry[3]*rv.m_afEntry[2];
+    	fEntry[3] = m_afEntry[2]*rv.m_afEntry[1] + m_afEntry[3]*rv.m_afEntry[3];
+    	set(fEntry[0], fEntry[1], fEntry[2], fEntry[3]);
+    }
+    
+    public void mult ( float scalar ){  
+    	
+    	m_afEntry[0] *= scalar;
+        m_afEntry[1] *= scalar;
+        m_afEntry[2] *= scalar;
+        m_afEntry[3] *= scalar;
+    }
+    
+   
+    public void fromAngle ( float fAngle )
+    {
+        m_afEntry[0] = (float)Math.cos((double)fAngle);
+        m_afEntry[2] = (float)Math.sin((double)fAngle);
+        m_afEntry[1] = -m_afEntry[2];
+        m_afEntry[3] =  m_afEntry[0];
+    }
+    
+    public tintaVector2 getColumn( int i ) {	
+    	if( i > 1 || i < 0 )
+    		return null;
+    	
+		return new tintaVector2( m_afEntry[i], m_afEntry[i + 2] );
+	}   
+    
+    public float determinant(){
+    	return m_afEntry[0]*m_afEntry[3] - m_afEntry[1]*m_afEntry[2];
+    }
+    
+    
+    @Override
+	public boolean equals(Object other){
+	    if (other instanceof tintaMatrix2){
+	        if (  ((tintaMatrix2)other ).m_afEntry[0] ==  m_afEntry[0] 
+	        		&& ((tintaMatrix2)other ).m_afEntry[1] ==  m_afEntry[1] 
+	        				&& ((tintaMatrix2)other ).m_afEntry[2] ==  m_afEntry[2]
+	        						&& ((tintaMatrix2)other ).m_afEntry[3] ==  m_afEntry[3]){
+	        	
+	            return true;
+	        }
+	    }
+	    return false;
+	}
+	
+	@Override	
+	public int hashCode() {
+		
+		int hash = 1;
+		final int prime = 31;
+		hash = prime * hash + Float.floatToIntBits( m_afEntry[0] );
+		hash = prime * hash + Float.floatToIntBits( m_afEntry[1] );	
+		hash = prime * hash + Float.floatToIntBits( m_afEntry[2] );
+		hash = prime * hash + Float.floatToIntBits( m_afEntry[3] );
+				
+		return hash;			 	
+	} 
+    
+	private float m_afEntry[] = {0.f, 0.f, 0.f, 0.f, 0.f};
+}

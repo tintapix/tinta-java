@@ -1,0 +1,34 @@
+package com.tinta.common;
+
+
+/**
+ * Uniqal Id generator 
+ * @author Mikhail Evdokimov
+ *
+ */
+public class tintaIdGen {
+
+	
+	public tintaIdGen(){}
+	
+	public tintaIdGen( long id ){
+		mIdGen = id;
+	}
+	
+	public long genId(){
+		if( mIdGen + 1 < 0 )
+			mIdGen = 0; 
+		return ++mIdGen;
+	}
+	
+	public long getId(){
+		return mIdGen;
+	}
+		
+	public void setIdGen(long id ){
+		mIdGen = id;	
+	}
+	
+	
+	private long mIdGen = 0;
+}

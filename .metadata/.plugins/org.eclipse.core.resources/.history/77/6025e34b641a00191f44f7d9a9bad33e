@@ -1,0 +1,243 @@
+package com.tinta.tintaLuaApp;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
+
+import com.tinta.common.molyILogger;
+import com.tinta.common.lua.tintaILuaParam;
+import com.tinta.common.lua.tintaLua;
+import com.tinta.common.socket.tintaSocketSet;
+
+import org.eclipse.swt.widgets.Display;
+
+public class tintaLuaConsole        extends tintaConsoleSWT 
+									implements molyILogger.tintaIOnMsg,
+									tintaSocketSet.IReceiveHandler,
+									tintaLuaInteract.tintaIInteractAction,
+									tintaIExecuted {
+	
+	private static final String helpText = "----help---\nCore functions:\njava.msg(\"text\",1000,true)\njava.rand(min,max)\n"
+			+ "java.srand(seed)\njava.randf()\n"
+			+ "java.call(\"java_function_name\", param1, param2, ...)\n----\n"
+			+ "Hot keys:\nF5 - execute\n----";
+	
+	
+	private static String findFirstWord( String src ){	
+		
+		int posLast = src.indexOf(" ");
+		if( posLast > -1 )
+			return src.substring(0, src.indexOf(" "));
+		
+		return src;
+	}
+	
+	protected class ScriptData {
+		
+		ScriptData(){			
+		}	
+		
+		ScriptData(String buffer, byte [] data  ){
+			mBuffer = buffer;			
+			mData = data;
+		}
+		
+		String mBuffer = new String();	
+		
+		byte [] mData = null;
+	}
+	
+	public void onExecute(String buffer){		
+		executeLua( buffer );		
+	}		
+		
+	public void closeInteract() {
+		if( mInteract != null ){
+			mInteract.close();
+		}
+	}
+	
+	public void interactAdded( long id ){		
+		mInteract.addReciveHandler(id, this);
+		
+		tintaLuaInteract.CONNECTION_TYPE type = mInteract.getType(id);
+		
+		// someone connected to the server and server has or not handler
+		if( type == tintaLuaInteract.CONNECTION_TYPE.CLIENT_REMOTE ){
+			long server = mInteract.getServerId(id);
+			
+			String handler =  mHandlers.get(server);
+			if( handler != null )
+				mHandlers.put(id, handler); // remote client has the handler now
+			
+		}
+	}
+	
+	public void interactRemoved( long id ){		
+		mInteract.removeReciveHandler(id, this);	
+		mHandlers.remove(id);
+		Iterator it = mNames.entrySet().iterator();
+		    while ( it.hasNext() ) {
+		    	
+		    	Map.Entry<String, Long> pair = (Map.Entry<String, Long>)it.next();
+		        
+		        if( pair.getValue() == id ){
+		        	it.remove(); 
+		        	break;
+		        }		        
+		    }
+	}
+	
+	
+	public void onFinish() {
+		
+		String err =  mLua.error();
+		
+		if( err != null ){			    
+			onMsg( err );
+		}
+		
+		mIsExeciting.set( false );
+		
+		if ( mToExecute.size() > 0 ){
+			executeLua( mToExecute.poll() );		
+		}
+	}
+	
+	public void onMsg( String msg ){
+		try {
+			mMsgLock.lock();
+			super.logMsg(msg);
+		}
+		finally {
+			mMsgLock.unlock();
+		}
+	}
+	
+	public void onUpdateQueue(){
+		super.updateQueue();
+	}
+	
+	public tintaLuaConsole( Display shell , boolean infoMode ){
+		super( shell, infoMode, "lua" );
+		
+		mSys.put( "help", new tintaISysCommand() {
+			public boolean execute( String [] params ){
+				
+				String[] parts = helpText.split("\n");
+				for(String str : parts )
+					onMsg( str );
+				
+				onMsg( "Java functions:" );
+				
+				Map<String, tintaILuaParam> javaFunc = mLua.getParams();
+				
+				javaFunc = mLua.getParams();			
+				
+				for ( Map.Entry<String, tintaILuaParam> entry : javaFunc.entrySet())
+					onMsg( entry.getValue().getDescription() );
+				
+				return true;
+			}
+		}		
+		);
+		
+		mLua.addMsgReceiver( this );	
+		mLua.init();	
+		mLua.setInteract( mInteract );
+		mInteract.addInteractHandler(this);
+		
+		
+		mLua.registerParam( new tintaILuaParam() {
+			
+			public String getName(){return "socket.listen";}
+			
+			public String getDescription(){return "socket.listen( connection_id, \"buffer or script_name.lua\"), addes handler on data receiving from the socket";};
+			
+			public int call( tintaLua context ){
+				
+				if( context.stackSize() != 3 ){					
+					return 0;
+				}
+				
+				int idConnect = mLua.getInt( 2 );					
+				String toExecute = mLua.getString( 3 );
+				
+				if( mInteract.hasConnection(idConnect) ){				
+					mHandlers.put((long)idConnect, toExecute);
+				}
+				
+				return 0;
+			}
+		}		
+		);			
+		
+		onMsg( "Type \'help\' for more information" );		
+	}		
+	
+	public void onReceive(long recipient, final byte[] data){
+		
+		String toExecute = mHandlers.get(recipient);
+		
+		if( toExecute != null ){
+			executeLua( new ScriptData( toExecute, data )  );
+		}
+	}
+	
+	private void executeLua( String text ){	
+		executeLua( new ScriptData( text, null ) );
+	}
+	
+	
+	
+	private void executeLua( ScriptData script  ){	
+		
+		if( script.mBuffer.length() == 0 )
+			return;
+		
+		String first =  findFirstWord(script.mBuffer);
+		
+		tintaISysCommand sys = mSys.get(first);
+		
+		if( sys != null ){
+			String[] params = script.mBuffer.split(" ");
+			sys.execute(params);
+			return;
+		}	
+		
+		if( !mIsExeciting.get() ){
+			if( script.mBuffer.length() > 0 ){
+				
+				boolean isFile = script.mBuffer.length() > 4 && ( script.mBuffer.substring(script.mBuffer.length() - 4).equals(".lua") );
+				mIsExeciting.set(true);
+				Thread t = new Thread( new tintaLuaThread( mLua, script, isFile, this ) );
+				t.start();			
+			}
+		} else {
+			if(mToExecute.size() <= maxTaskInQueue )
+					mToExecute.add( script );
+		}
+	}
+	
+	private tintaLua mLua = new tintaLua();
+	
+	private int maxTaskInQueue = 10;
+	
+	private Queue <ScriptData> mToExecute = new LinkedList<ScriptData>();
+	
+	private tintaLuaInteract mInteract =  new tintaLuaInteract();
+	
+	private Map<Long,String> mHandlers = new HashMap<Long,String>();
+	
+	private AtomicBoolean mIsExeciting = new AtomicBoolean(false);
+	
+	private Map<String, Long> mNames = new HashMap<String,Long>();  
+	
+	private Map<String,tintaISysCommand> mSys = new HashMap<String,tintaISysCommand>();
+	
+	private ReentrantLock mMsgLock = new ReentrantLock();
+	
+}

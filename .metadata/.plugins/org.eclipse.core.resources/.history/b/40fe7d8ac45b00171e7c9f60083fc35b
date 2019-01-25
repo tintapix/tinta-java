@@ -1,0 +1,439 @@
+/**
+ * Copyright (C) 2011 - 2017 Evdokimov Mikhail
+ * tintapix.com
+ * molygon@gmail.com
+ */
+
+package com.tinta.phrasemem;
+
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Collections;
+import java.util.Random;
+import java.util.Vector;
+
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
+
+import com.tinta.build.molyBuild;
+import com.tinta.common.ControlContainer;
+import com.tinta.common.molyDebug;
+import com.tinta.common.molyILogger;
+import com.tinta.common.molyNoConfigException;
+
+
+
+public class ApplicationSWT {
+    
+    enum MsgType{
+	Error, 
+	Message,
+	Warning
+	
+    }
+    
+    static molyBuild mBuild;
+    
+    static final String mAppName = "MyWords";
+    
+    static final String mFileText = "Open";
+    static final String mLastText = "Last phrase";    
+    static final String mExtension = "txt";
+    
+    static final String btnComFontName = "Arial";
+    static final int btnFontSize = 14;
+    static final int btnComFontSize = 10;
+    	   final String mStrBtnLast = "Last phrase";
+    	   final String mStrBtnOpen = "OpenFile";
+    	   
+    //static final String mConfigName = "config.ini";
+    static final String mLogName = "exceptions.log";
+    
+   
+    	   
+    private int mWinHeight = 400;
+    private int mWinWidth  = 400;
+    
+   // private int mMaxWords = 100;
+    static Integer mMaxWordsSampl = 10;
+    private boolean mIsCyclic = true;
+    
+    // btnuest + btnansw + btnopen + btnlast + listfiles 	    
+    final double mBtnPercentsY[] = {  30, 30, 10,10, 20 } ;	   
+    	   
+    private ControlContainer mControls = new ControlContainer();
+    public Shell mShell;          
+    final Button mQuest;
+    final Button mAnswer;
+    final Button mFile; 
+    final Button mLast;
+    
+    private molyConfigSWT mCfg;
+    
+    final List  mListFiles;
+    
+    TxtWordFileParser mParser  = new TxtWordFileParser();
+    
+//    /private File mAbsPath;    
+    private String mPathCurrent = "";
+    
+    private Vector<File> mFiles;
+    Vector<WordPair> parsedPairs = new Vector<WordPair>();
+    WordPair wordToSolve = new WordPair();  
+    
+    Vector<WordPair> parsedPairsFinal = new Vector<WordPair>();
+    private Random mRand;
+    private int mOldIndex = -1;
+    
+    void updateMsgList(MsgType msgType, String msgText){
+	
+	String prefix = new String();
+	
+	switch(msgType){
+	    case Error:
+		prefix = " Error: "; 
+		break;
+		
+	    case Warning:
+		prefix = " Warning: "; 
+		break;
+			    	
+	    case Message:
+		prefix = " "; 
+		break;		
+	};
+	
+	mShell.setText(mAppName + prefix + msgText);
+	
+    }
+    
+    private void fillList(){
+	String fileDir = new File("").getAbsolutePath();
+	try {
+	    mAbsPath = new File(fileDir);
+	    mFiles =  com.tinta.common.tintaUtilSystem.fillFiles(fileDir, mExtension);
+	}
+	catch(IOException e){
+	    updateMsgList(MsgType.Error, e.getMessage());
+	}
+	
+	
+	if( mFiles != null ){
+	    for (File f : mFiles){
+		mListFiles.add( f.toString() ); 
+	        
+	    }
+	}
+    }
+   
+    private int randUniqInt( int min, int max , Vector<Integer> list){
+	
+	int rez = -1;
+	
+	if(min < 0 || max <= 0 || min >= max || list.size()-1 != max )
+	    return rez;
+	
+	rez = mRand.nextInt(max) + min;
+	mRand.setSeed(mRand.nextInt());
+	
+	int cycle = 0; 
+	while( list.elementAt(rez) == 1){
+	    if( cycle == list.size() )
+		break;
+	    if( rez == list.size() - 1 ){
+		rez = 0;		
+	    }
+	    else
+		rez++;
+	    
+	    cycle++;
+	}
+		
+	return rez;
+    }
+    private void parseFile(String PathToFile) {	 
+	
+	 //mParser.ParseFile(PathToFile, true);	 
+	 
+	 mParser.ParseFileWords(PathToFile, true);
+	 
+	 parsedPairs = mParser.GetWords();    
+		 
+	// getting data config
+	//mMaxWords = mConfigData.getMaxWords();
+		    
+		
+	//mMaxWordsSampl = 10; //mConfigData.getMaxWordsSampl();
+	
+	
+	
+	//if( mMaxWordsSampl > mMaxWords )
+	//    mMaxWordsSampl = mMaxWords;
+	    
+		
+	
+		
+	 if( parsedPairs.isEmpty() ) {
+	     blockControls( true );
+	     updateMsgList(MsgType.Error , " No one phrase was found on path " + PathToFile );
+	 }
+	 else {
+	     blockControls( false );
+	     updateMsgList(MsgType.Message, " Path " + PathToFile + ", phrases parsed: " + parsedPairs.size());	      
+	 }     
+		 
+    }
+    
+    private void blockControls(boolean bBlockButtons){
+	
+	mQuest.setEnabled(!bBlockButtons);
+	mAnswer.setEnabled(!bBlockButtons);
+		mLast.setEnabled(!bBlockButtons);
+   	
+    }
+    private void onResize(){
+	
+	
+	mControls.setPercentFactors( (double)mWinHeight, mBtnPercentsY);
+		   
+	mQuest.setSize(mWinWidth,(int)mControls.getPosition(0).mSize);
+	mQuest.setLocation(0, (int)mControls.getPosition(0).mPosition);
+	mAnswer.setSize(mWinWidth,(int)mControls.getPosition(1).mSize);
+	mAnswer.setLocation(0, (int)mControls.getPosition(1).mPosition);
+	mFile.setSize(mWinWidth,(int)mControls.getPosition(2).mSize);
+	mFile.setLocation(0, (int)mControls.getPosition(2).mPosition);
+	mLast.setSize(mWinWidth,(int)mControls.getPosition(3).mSize);
+	mLast.setLocation(0, (int)mControls.getPosition(3).mPosition);
+	mListFiles.setSize(mWinWidth,(int)mControls.getPosition(4).mSize);
+	mListFiles.setLocation(0, (int)mControls.getPosition(4).mPosition);	
+	
+    }
+    
+    public ApplicationSWT(Shell parent, int style) throws molyNoConfigException {
+	
+    mBuild = new molyBuild();
+    
+    molyDebug.getLogger().logMsg("Begin executing", molyILogger.molyMsgLevel.MSG_INFO);    	
+	mRand = new Random();
+	mRand.setSeed( System.currentTimeMillis() );
+	mShell = parent; //new Shell(parent,style);
+	
+	
+	
+	mShell.setSize(mWinWidth, mWinHeight);
+	
+	mShell.setLocation(300, 300);
+	//FillLayout fillLayout = new FillLayout(SWT.VERTICAL);
+	//mShell.setLayout(fillLayout);
+	
+	
+	
+	mShell.setText(mAppName);
+	
+	mQuest = new Button( mShell, SWT.NONE );
+	mQuest.setText("");
+	
+	mQuest.setFont(new Font(parent.getDisplay(), btnComFontName, btnFontSize, SWT.BOLD ));
+	
+	
+	mAnswer = new Button( mShell, SWT.NONE );
+	mAnswer.setFont(new Font(parent.getDisplay(), btnComFontName, btnFontSize, SWT.BOLD ));
+	mAnswer.setText("");
+	
+	
+	mFile = new Button( mShell, SWT.NONE );
+	mFile.setFont(new Font(parent.getDisplay(), btnComFontName, btnComFontSize , SWT.NORMAL));
+	mFile.setText(mStrBtnOpen);
+	
+	
+	//mFile.setSize(40, 40);
+	
+	mLast = new Button( mShell, SWT.NONE );
+	mLast.setFont(new Font(parent.getDisplay(), btnComFontName, btnComFontSize , SWT.NORMAL));
+	mLast.setText(mStrBtnLast);
+	
+	
+	mListFiles = new List( mShell, SWT.MULTI | SWT.BORDER | SWT.V_SCROLL );
+	mListFiles.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+	mListFiles.setFont(new Font(parent.getDisplay(), btnComFontName, btnComFontSize , SWT.NORMAL));
+	
+	
+	onResize();
+	fillList();	
+	
+	parent.addListener(SWT.Resize, new Listener() { 	
+	    @Override
+	    public void handleEvent(Event event){
+	       	       
+	       mWinHeight = mShell.getClientArea().height;
+	       mWinWidth =  mShell.getClientArea().width;	
+	       /*System.out.println("width ");
+	       System.out.println(mWinWidth);
+	       System.out.println("height");
+	       System.out.println(mWinHeight);*/
+	       onResize();	
+	       
+	     }
+	 });
+	
+	
+	
+	
+	mQuest.addMouseListener( new MouseAdapter() {	
+	    
+	    @Override
+	    public void mouseDown(MouseEvent e)
+	    {
+		
+		int max = parsedPairsFinal.size() - 1;
+		if( max == 0 )
+		    return;
+		
+		Random rn = new Random();		
+		int index = rn.nextInt(max);
+		
+		if( mOldIndex ==  index){
+		    
+		    if(index == max)
+			index = 0;
+		    else
+			index++;
+		    
+		}		
+		mOldIndex = index;		
+		//int pos = mWordsIdices.get(index);
+		
+		wordToSolve =  parsedPairsFinal.get(index);
+		mQuest.setText(wordToSolve.mFirstWord);	
+		mAnswer.setText("");
+	    }	    
+	} );
+	
+	mAnswer.addMouseListener( new MouseAdapter() {	
+	    
+	    @Override
+	    public void mouseDown(MouseEvent e)
+	    {
+		if(mAnswer.getText() == "")
+		    mAnswer.setText(wordToSolve.mSecondWord);
+		else
+		    mAnswer.setText("");
+	    }	    
+	} );
+	
+	mLast.addMouseListener( new MouseAdapter() {	
+	    
+	    @Override
+	    public void mouseDown(MouseEvent e)
+	    {
+		mQuest.setText( parsedPairs.get( parsedPairs.size() - 1 ).mFirstWord );
+	    }	    
+	} );
+	
+	mFile.addMouseListener( new MouseAdapter() {
+	    
+	    @Override
+	    public void mouseDown(MouseEvent e)
+	    {
+		
+		parseFile(mPathCurrent);
+		if(parsedPairs.size() == 0)
+		    return;
+		
+		//Integer val = new Integer(0);
+		mCfg = new molyConfigSWT(mShell, SWT.PRIMARY_MODAL | SWT.SHEET, "Select maximum words", mShell.getLocation(), new Point(mShell.getSize().x, mShell.getSize().y/3));
+		mCfg.showDlg(mShell.getDisplay());
+		
+		if( mMaxWordsSampl >= parsedPairs.size() )
+		    mMaxWordsSampl = parsedPairs.size()-1;
+		
+		parsedPairsFinal.clear();
+		mOldIndex = -1;
+		
+		Vector<Integer> listUniq = new Vector<Integer> ();
+		listUniq.setSize(parsedPairs.size());
+		Collections.fill(listUniq, 0);
+		for( int i = 0; i < mMaxWordsSampl; i++) {
+		    int v = randUniqInt( 0, listUniq.size() - 1, listUniq);
+		    if(v == -1)
+			break;
+		    listUniq.setElementAt(1, v);
+		    
+		    parsedPairsFinal.add(parsedPairs.get(v));
+		}	
+		parsedPairs.clear();
+		
+	    }	    
+	} );
+	
+	mListFiles.addSelectionListener(new SelectionListener() {
+	      
+	    @Override
+	    public void widgetSelected( SelectionEvent arg0 ) {
+		
+		int [] indexSelected =  mListFiles.getSelectionIndices();
+		if( indexSelected.length == 0 )
+		    return;
+		
+		
+		File toParse  = mFiles.get( indexSelected[0] );		
+		mPathCurrent = toParse.getPath();
+		
+		updateMsgList(MsgType.Message, " Path selected " + mPathCurrent);	
+		
+	    }
+	    @Override
+	    public void widgetDefaultSelected(SelectionEvent arg0) {			
+	    }
+	});
+	blockControls(true);
+	
+	mShell.pack();
+	        
+	mShell.open();
+    }
+
+
+    public static void main( String[] args ) {
+	
+        Display display = new Display();
+        Shell shell = new Shell(display);
+        
+       
+      try {	       
+	  new ApplicationSWT( shell,  SWT.CLOSE | SWT.RESIZE);
+      } catch( molyNoConfigException e ){
+	  
+	  ByteArrayOutputStream out = new ByteArrayOutputStream();
+	    e.printStackTrace(new PrintStream(out));
+	    System.out.println(new String(out.toByteArray()));
+	  
+      }
+        
+        while (!shell.isDisposed())
+        {
+    	if (!display.readAndDispatch())
+    	    display.sleep();
+        }
+        display.dispose();
+    }
+    
+    
+ 
+	
+}

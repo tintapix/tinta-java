@@ -1,0 +1,7 @@
+package Molygon;
+
+public class molyApp {
+
+	boolean executeCommand(String command)
+	
+}

@@ -1,0 +1,29 @@
+/**
+ * Copyright (C) 2011 - 2019 Mikhail Evdokimov 
+ * tintapix.com
+ * molygon@gmail.com
+ */
+
+package com.tinta.common;
+
+/**
+ * * Common class for tinta exceptions
+ */
+public class tintaException extends Exception {
+
+	static final long serialVersionUID = -3387516993124229948L;
+
+	tintaException(String msg) {
+		super(msg);
+	}
+
+	void printMsg() {
+		molyILogger l = tintaDebug.getLogger();
+		if (l != null)
+			l.logMsg(super.getLocalizedMessage(),
+					molyILogger.molyMsgLevel.MSG_EXCEPTION);
+		else
+			System.out.print(super.getLocalizedMessage());
+		super.getLocalizedMessage();
+	}
+}

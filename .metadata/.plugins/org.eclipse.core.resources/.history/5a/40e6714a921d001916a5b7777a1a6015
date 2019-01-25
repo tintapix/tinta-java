@@ -1,0 +1,594 @@
+package com.tinta.common.lua;
+
+
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+
+import java.util.StringTokenizer;
+
+import com.tinta.common.molyILogger;
+import com.tinta.common.tintaDebug;
+import com.tinta.common.molyILogger.molyMsgLevel;
+import com.tinta.tintaLuaApp.tintaLuaInteract;
+
+public class tintaLua {
+	
+	
+	
+	public native void init();
+	
+	public native void release();
+	
+	public void executeBuffer(String prompt){
+		executeBuffer(prompt,prompt.length());
+	}
+	
+	public native void executeBuffer(String prompt, int length);	
+	
+	public native void executeFile(String filePath);
+	
+	public native int      getGlobInteger( String name );
+	
+	public native boolean  getGlobBolean( String name );
+	
+	public native double   getGlobDouble( String name );
+	
+	public native String   getGlobString( String name );
+	
+	public native float    getGlobFloat( String name );
+	
+	public native int[]    getGlobIntArray( String name );
+	
+	public native float[]  getGlobFloatArray( String name );
+	
+	public native double[]   getGlobDoubleArray( String name );
+	
+	public native boolean[]  getGlobBooleanArray( String name );
+	
+	public native String[] getGlobStringArray( String name );
+	
+	public native int     stackSize();
+	
+	public native int     getInt( int index );
+	
+	public native double  getDouble( int index );
+	
+	public native boolean getBoolean( int index );
+	
+	public native float   getFloat( int index );
+	
+	public native String  getString( int index );
+	
+	
+	public native void    pushVal( int data );	
+	
+	public native void    pushVal( float data );
+	
+	public native void    pushVal( double data );
+	
+	public native void    pushVal( boolean data );
+	
+	public native void    pushVal( String data );
+	
+	public native void    setError( String text );
+	
+	public native String  error();
+	
+	public boolean registerParam(tintaILuaParam param ) {		
+		return mParams.put(param.getName(), param) == null;			
+	}
+	
+	public int   callback( ) {
+		
+		String name  = getString(1);
+		if( name == null ){			
+			setError( "Parameter name required first \n" );
+			return -1;
+		}		
+		tintaILuaParam val = mParams.get(name);
+		if( val == null ){
+			setError( "Not registered function " + name + "\n" );
+			return -1;
+		}
+		return val.call(this);		
+	}	
+	
+	
+	public void addMsgReceiver( molyILogger.tintaIOnMsg m ){
+		mMsgReceivers.add( m );
+	}
+	
+	public void removeMsgReceiver( molyILogger.tintaIOnMsg m ){
+		mMsgReceivers.remove( m );
+	}
+	
+	public void   msg( String msg ) {		
+		for ( molyILogger.tintaIOnMsg i : mMsgReceivers ) {						
+			i.onMsg( msg );
+		}
+	}	
+	
+	
+	public void setInteract( tintaLuaInteract interact ) {
+		mInteract = interact;
+	}
+	
+	
+	public tintaLua() {
+		
+		registerParam( new tintaILuaParam() {
+			
+			public String getName(){return "shell";}
+			
+			public String getDescription(){return "shell( \" cmd /c start cmd.exe  /K \"  echo message   \"   \"): to execute shell command";};
+			
+			public int call( tintaLua context ){
+				if( context.stackSize() != 2 ){
+					setError( " shell must receive two arguments" );
+					return -1;
+				}
+				
+				try {						
+					 Runtime.getRuntime().exec( getString( 2 )); 		           
+				}
+				catch(IOException e){
+					molyILogger log = tintaDebug.getLogger();			
+					if( log != null )
+						log.logMsg( e.getMessage(), molyMsgLevel.MSG_EXCEPTION );
+				}
+				
+				return 0;
+				
+				
+			}
+		}		
+		);
+
+		registerParam( new tintaILuaParam() {
+			
+			public String getName(){return "math.pow";}
+			
+			public String getDescription(){ return "pow(real base, real exp): computes the value of base raised to the power exp";};
+			
+			public int call( tintaLua context ){
+				
+				if( context.stackSize() != 3 ){
+					setError( " pow must receive two float arguments" );
+					return -1;
+				}
+				
+				pushVal((float)Math.pow( getFloat( 2 ), getFloat( 3 ) ));
+				return 1;
+			}
+		}		
+		);	
+		
+		
+		registerParam( new tintaILuaParam() {
+			
+			public String getName(){return "socket.info";}
+			
+			public String getDescription(){return "socket.info(connection_id) returns connection  information structure(type,port,host,clients_quantity) for types: 0(server) - type, port, clients_quantity /"
+					+ " ; 1(server connections) - type, port; 2(local connections) - type, host, port";};
+			
+			public int call( tintaLua context ){
+				
+				if( context.stackSize() != 2 ){
+					setError( "socket.info wrong arguments quantity" );
+					return -1;
+				}				
+				if( mInteract != null ){
+
+				}				
+				return 0;
+			}
+		}		
+		);
+		
+		
+		registerParam( new tintaILuaParam() {
+			
+			public String getName(){return "socket.send";}
+			
+			public String getDescription(){return "socket.send( connection_id ) sends data from the data buffer. Call socket.set data to fill data buffer"; };
+			
+			public int call( tintaLua context ){
+				
+				if( context.stackSize() != 2 ){
+					setError( "socket.send has wrong arguments quantity, at least connection_id " );
+					return -1;
+				}
+				
+				if( mInteract != null ){
+					
+					int idConnect = getInt( 2 );
+					
+					if(mSendData.size() > 0){								    	
+						    
+						    if( !mInteract.send( idConnect, mSendData.toByteArray() ) ){
+								setError( "socket.send Error while sending data");
+								return -1;
+						    }
+						
+					}
+					else{
+						setError( "socket.send Data length is 0");
+						return -1;
+					}
+				}
+				return 0;
+			}
+		}		
+		);	
+			
+		registerParam( new tintaILuaParam() {
+			
+			public String getName(){return "socket.close";}
+			
+			public String getDescription(){return "socket.close( client_id ) closes server or client connection "; };
+			
+			public int call( tintaLua context ){
+				
+					if( context.stackSize() < 2 ){
+						setError( "socket.close has wrong arguments quantity" );
+						return -1;
+					}
+					
+					if( mInteract != null ){
+						
+						int idConnect = getInt( 2 );							
+						
+						mInteract.close(idConnect);									
+					}
+										
+					return 0;
+				}			
+			}
+		);		
+		
+		
+		registerParam( new tintaILuaParam() {
+			
+			public String getName(){return "socket.getdata";}
+			
+			public String getDescription(){return "socket.getdata( data_form, values_count, offset) - unpacks and returns as string saved byte data and offset . Data in form  \"value1 value2 ...\" (e.g. inetegar array \"100 80 11\") or utf-8 string /"
+					+ " suppoted forms: \"string\", \"float\",\"double\", \"integer\",\"byte\". data(\"integer\", 10), default values_count = all_data/data_value_size, offset = 0"; };
+			
+			public int call( tintaLua context ){
+				
+					if( context.stackSize() < 1 ){
+						setError( "socket.getdata. Wrong data size" );
+						return -1;
+					}
+					String form = getString( 2 );
+					
+					int count = getInt( 3 );
+					
+					if( count < 1 )
+						count = mBindData.length;
+					
+					int offset = getInt( 4 );
+					
+					if( offset < 0 )
+						offset = 0;
+					
+					//mBindData = new byte[]{ 0,0,0,0x64,0,0,0,0x61 };
+					
+					if( form != null && mBindData.length > 0 ){
+						
+						if( form.equals("string") ){
+							try {						
+								String text = new String(mBindData, offset, count, "UTF-8");
+								pushVal( text );	
+								pushVal( offset += count  );	
+								return 2; 
+							}
+							catch(  UnsupportedEncodingException e){
+								setError( "socket.getdata. can`t convert data in utf-8 format or data length" + e.getLocalizedMessage() );
+								return -1;
+							}
+						}
+						
+						StringBuffer sb = new StringBuffer();	
+						ByteBuffer wrapped = ByteBuffer.wrap(mBindData);
+						try {
+							if( form.equals("integer") ){							
+								
+								
+									if( count < 1  )
+										count = mBindData.length * Integer.BYTES;
+									for( int i = 0; i < count; i++ ){
+										sb.append(wrapped.getInt( offset  + (i * Integer.BYTES ));									
+										sb.append(" ");										
+									}		
+									offset += (count * Integer.BYTES);
+							}
+							else if( form.equals("float") ){							
+								
+								
+									if( count < 1  )
+										count = mBindData.length * Float.BYTES;
+									for( int i = 0; i < count; i++ ){
+										sb.append(wrapped.getFloat(  offset  + ( i  * Float.BYTES  ) );									
+										sb.append(" ");
+										
+									}		
+									offset += (count * Float.BYTES);
+							}
+							else if( form.equals("byte") ){				
+								
+								
+									if( count < 1  )
+										count = mBindData.length;
+									for( int i = 0; i < count; i++ ){
+										sb.append(mBindData[offset  + i]);									
+										sb.append(" ");
+									}							
+									offset += count;
+							}						
+							else if( form.equals("double") ){								
+								
+									if( count < 1  )
+										count = mBindData.length * Double.BYTES;
+									for( int i = 0; i < count; i++ ){
+										sb.append(wrapped.getDouble( ( offset  +  i ) * Double.BYTES ));									
+										sb.append(" ");
+									}		
+									offset += count * Double.BYTES;
+							}
+							else {	
+								setError( "socket.getdata wrong data type: " + form );
+								return -1;
+							}
+						}
+						catch(IndexOutOfBoundsException e){
+							setError( "socket.getdata data length error." + e.getMessage() );
+							return -1;
+						}
+						
+						pushVal( sb.toString() );
+						
+						pushVal( offset );
+						
+						return 2; 
+					}
+					return 0;									
+				}			
+			}
+		);	
+		
+		
+		registerParam( new tintaILuaParam() {
+			
+			public String getName(){return "socket.setdata";}
+			
+			public String getDescription(){return "socket.setdata( data_form, value, offset) - packs and adds the data in the buffer, default offset = 0 , with no argument(socket.setdata()) resets buffer size to 0, returns current offset"; };
+			
+			public int call( tintaLua context ){
+				
+					if( context.stackSize() < 1 ){
+						setError( "socket.setdata. Wrong data size" );
+						return -1;
+					}
+					
+					if( context.stackSize() == 1 ){						
+						mSendData.reset();
+						
+						return 0; 
+					}
+					
+					if( context.stackSize() != 3 && context.stackSize() != 4 ){						
+						setError( "socket.setdata. Wrong arguments" );						
+						return -1; 
+					}
+					
+					String form = getString( 2 );				
+					
+					int offset = getInt( 4 );
+					
+					if( offset< 0 )
+						offset = 0;
+					
+					 
+					if( form != null  ){
+						
+						if( form.equals("string") ){													
+								
+							String value = getString( 3 );
+							
+							if( value != null && value.length() > 0 ){
+								try {
+									
+									byte[] bytes = value.getBytes("UTF-8");
+								
+									mSendData.write( bytes, offset, bytes.length );
+									offset += bytes.length;
+								}
+								catch( UnsupportedEncodingException e ){
+									
+								}
+							}
+							pushVal(offset);
+							return 1; 						
+						}												
+						
+						ByteBuffer byteBuffer = null; //ByteBuffer.allocate(Integer.BYTES);
+						byte[] bytes = null;
+						
+						if( form.equals("integer") ){
+							
+							byteBuffer = ByteBuffer.allocate(Integer.BYTES);
+							
+							int value = getInt(3);
+							bytes = byteBuffer.putInt(value).array();
+							
+								
+						}
+						else if( form.equals("float") ){							
+							
+							byteBuffer = ByteBuffer.allocate(Float.BYTES);
+							
+							float value = getFloat(3);
+							
+							bytes = byteBuffer.putFloat(value).array();		
+						}
+						else if( form.equals("byte") ){				
+							
+							byte value = (byte)getInt(3);
+							
+							bytes = new byte[]{value};															
+							
+						}	
+						else if( form.equals("array") ){				
+							
+							String value = getString( 3 );
+							
+							StringTokenizer st = new StringTokenizer(value, " ");
+							
+							ArrayList<String> list = new ArrayList<String>();
+							
+							while (st.hasMoreTokens()) {
+								list.add(st.nextToken());
+							}
+							
+							
+							
+							if(list.size() > 0 ){
+								
+								byteBuffer = ByteBuffer.allocate(list.size() );
+								for( String v : list ){
+									try {
+										byte bValue = Byte.parseByte(v);
+										byteBuffer.put(bValue);
+									}
+									catch(NumberFormatException e ){
+										setError( "socket.setdata. Wrong byte value in byte array. "+ e.getMessage() );
+										return -1;
+									}
+									
+								}
+								bytes = byteBuffer.array();
+							}							
+						}
+						else if( form.equals("double") ){								
+							
+							byteBuffer = ByteBuffer.allocate(Double.BYTES);
+							
+							double value = (double)getFloat(3);
+							
+							bytes = byteBuffer.putDouble(value).array();								
+						} else {	
+							setError( "socket.setdata wrong data type: " + form );
+							return -1;
+						}
+						
+						if( bytes!= null && bytes.length > 0 ){
+							mSendData.write( bytes, 0, bytes.length );
+							//byte [] arrayTest = mSendData.toByteArray(); 
+							offset += bytes.length;
+							
+							pushVal(offset);
+							return 1;
+						}											
+						
+					}
+					return 0;									
+				}			
+			}
+		);	
+			
+			
+		registerParam( new tintaILuaParam() {
+			
+			public String getName(){return "socket.open";}
+			
+			public String getDescription(){return "socket.open( port_number ) opens server socket with host \"localhost\" or \"some_ip\" "; };
+			
+			public int call( tintaLua context ){
+				
+				if( context.stackSize() < 2 ){
+					setError( "socket.open has wrong arguments quantity " );
+					return -1;
+				}
+				if( mInteract != null ){					
+					
+				   int port = getInt( 2 );
+				   
+				   int id = (int)mInteract.addServer(port);
+				   
+				   if( id == -1 ){
+					   setError( "socket.open. An error has occured while creating server with port " + port );
+					   return -1;
+				   }
+				  pushVal( id );
+										
+				  return 1;									
+				}
+				return 0;
+			}
+		}		
+		);	
+		
+		registerParam( new tintaILuaParam() {
+			
+			public String getName(){return "socket.connect";}
+			
+			public String getDescription(){return "socket.connect( string_host_ip, port_number ) crates client socket and trying connect to host \"localhost\" or \"some_ip\""; };
+			
+			public int call( tintaLua context ){
+				
+				if( context.stackSize() < 2 ){
+					setError( "socket.connect has wrong arguments quantity " );
+					return -1;
+				}
+				if( mInteract != null ){					
+					
+				   String host = getString( 2 );
+				   int port = getInt( 3 );
+				   
+				   int id = (int)mInteract.addClient( host, port );
+										
+				   if( id == -1 ){
+					   setError( "socket.connect. An error has occured while connecting client to host "+ host + " port " + port );
+					   return -1;
+				   }
+				   
+				   pushVal( id );												
+				   return 1;												
+				}
+				return 0;
+			}
+		}		
+		);	
+	}
+	
+	public Map<String, tintaILuaParam> getParams() {
+		return mParams;
+	}
+	
+	public void bindData(byte [] data ){
+		mBindData = data;
+	}
+	
+	ByteArrayOutputStream mSendData = new ByteArrayOutputStream();
+	
+	private byte[] mBindData = null;	
+	
+	private Map<String, tintaILuaParam> mParams = new HashMap<String, tintaILuaParam>();
+	
+	private Set<molyILogger.tintaIOnMsg> mMsgReceivers = new HashSet<molyILogger.tintaIOnMsg>();
+	
+	private tintaLuaInteract mInteract = null;
+	static {
+			System.loadLibrary("tintaLuaJava");
+	}
+}

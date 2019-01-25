@@ -1,0 +1,32 @@
+/**
+ * Copyright (C) 2011 - 2019 Mikhail Evdokimov 
+ * tintapix.com
+ * tintapix@gmail.com
+ */
+
+package com.tinta.common;
+
+import com.tinta.math.tintaVector2;
+
+/**
+ * Position class
+ * @author Mikhail Evdokimov
+ *
+ */
+public class tintaControlPos {
+	
+	tintaControlPos( ){}
+	tintaControlPos( float xPos, float yPos, float xSize, float ySize){
+		mPosition.mx = xPos;
+		mPosition.my = yPos;
+		mSize.mx = xSize;
+		mSize.my = ySize;
+	}
+	
+	boolean isInvalid(){
+		return mPosition.mx == 0. && mPosition.my == 0. 
+					&&  mSize.mx == 0. && mSize.my == 0.;
+	}
+	public tintaVector2 mPosition = new tintaVector2();
+	public tintaVector2 mSize = new tintaVector2();
+}

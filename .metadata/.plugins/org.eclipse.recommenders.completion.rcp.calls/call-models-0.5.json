@@ -1,0 +1,61 @@
+{
+  "C:\\Program Files\\Java\\jre6\\lib\\resources.jar": {
+    "location": "C:\\Program Files\\Java\\jre6\\lib\\resources.jar",
+    "status": "UNRESOLVED"
+  },
+  "D:\\mya\\pixeltool_t\\Java\\molyCrypto\\src": {
+    "location": "D:\\mya\\pixeltool_t\\Java\\molyCrypto\\src",
+    "status": "UNRESOLVED",
+    "error": "No class path info available for \u0027D:\\mya\\pixeltool_t\\Java\\molyCrypto\\src\u0027. Skipped."
+  },
+  "C:\\Program Files\\Java\\jre6\\lib\\rt.jar": {
+    "location": "C:\\Program Files\\Java\\jre6\\lib\\rt.jar",
+    "status": "UNRESOLVED",
+    "error": "No call model found for \u0027C:\\Program Files\\Java\\jre6\\lib\\rt.jar\u0027. Neither fingerprint \u00274cdfc0d477d9a64649d4eb6e24c663ff4e3b1d09\u0027 nor symbolic name \u0027jre\u0027 are known."
+  },
+  "D:\\mya\\pixeltool_t\\Java\\MolyUtils\\src": {
+    "location": "D:\\mya\\pixeltool_t\\Java\\MolyUtils\\src",
+    "status": "UNRESOLVED",
+    "error": "No class path info available for \u0027D:\\mya\\pixeltool_t\\Java\\MolyUtils\\src\u0027. Skipped."
+  },
+  "D:\\mya\\pixeltool_t\\Java\\JavaSWT\\swt.jar": {
+    "location": "D:\\mya\\pixeltool_t\\Java\\JavaSWT\\swt.jar",
+    "status": "UNRESOLVED",
+    "error": "No call model found for \u0027D:\\mya\\pixeltool_t\\Java\\JavaSWT\\swt.jar\u0027. Neither fingerprint \u0027a5d40ef3582cb71631d493cf71d5dd559390f640\u0027 nor symbolic name \u0027swt\u0027 are known."
+  },
+  "D:\\mya\\pixeltool_t\\Java\\molyTexspringApp\\src": {
+    "location": "D:\\mya\\pixeltool_t\\Java\\molyTexspringApp\\src",
+    "status": "UNRESOLVED",
+    "error": "No class path info available for \u0027D:\\mya\\pixeltool_t\\Java\\molyTexspringApp\\src\u0027. Skipped."
+  },
+  "C:\\Program Files\\Java\\jre1.8.0_25\\lib\\rt.jar": {
+    "location": "C:\\Program Files\\Java\\jre1.8.0_25\\lib\\rt.jar",
+    "status": "UNRESOLVED",
+    "error": "No call model found for \u0027C:\\Program Files\\Java\\jre1.8.0_25\\lib\\rt.jar\u0027. Neither fingerprint \u0027892740cd5d8080b9a745b1c774e6ca21a595be59\u0027 nor symbolic name \u0027jre\u0027 are known."
+  },
+  "D:\\mya\\Molygon\\Java\\MolyUtils\\src": {
+    "location": "D:\\mya\\Molygon\\Java\\MolyUtils\\src",
+    "status": "UNRESOLVED",
+    "error": "No class path info available for \u0027D:\\mya\\Molygon\\Java\\MolyUtils\\src\u0027. Skipped."
+  },
+  "D:\\mya\\Molygon\\Java\\JavaSWT\\swt.jar": {
+    "location": "D:\\mya\\Molygon\\Java\\JavaSWT\\swt.jar",
+    "status": "UNRESOLVED",
+    "error": "No call model found for \u0027D:\\mya\\Molygon\\Java\\JavaSWT\\swt.jar\u0027. Neither fingerprint \u0027a5d40ef3582cb71631d493cf71d5dd559390f640\u0027 nor symbolic name \u0027swt\u0027 are known."
+  },
+  "D:\\mya\\Molygon\\Java\\molyTexspringApp\\src": {
+    "location": "D:\\mya\\Molygon\\Java\\molyTexspringApp\\src",
+    "status": "UNRESOLVED",
+    "error": "No class path info available for \u0027D:\\mya\\Molygon\\Java\\molyTexspringApp\\src\u0027. Skipped."
+  },
+  "D:\\mya\\Molygon\\Java\\demoDrive\\src": {
+    "location": "D:\\mya\\Molygon\\Java\\demoDrive\\src",
+    "status": "UNRESOLVED",
+    "error": "No class path info available for \u0027D:\\mya\\Molygon\\Java\\demoDrive\\src\u0027. Skipped."
+  },
+  "C:\\Program Files\\Java\\jdk1.7.0_25\\jre\\lib\\rt.jar": {
+    "location": "C:\\Program Files\\Java\\jdk1.7.0_25\\jre\\lib\\rt.jar",
+    "status": "UNRESOLVED",
+    "error": "No call model found for \u0027C:\\Program Files\\Java\\jdk1.7.0_25\\jre\\lib\\rt.jar\u0027. Neither fingerprint \u0027f4b43e11925392d7e7bbb9d2917004e2187570cf\u0027 nor symbolic name \u0027jre\u0027 are known."
+  }
+}

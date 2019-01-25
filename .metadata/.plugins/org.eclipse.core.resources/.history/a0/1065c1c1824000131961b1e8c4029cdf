@@ -1,0 +1,10 @@
+package Molygon;
+
+public class molyPosition {
+
+	molyPosition(int mXPos, int mYPos)
+	public int mXPos;
+	
+	public int mYPos;
+	
+}

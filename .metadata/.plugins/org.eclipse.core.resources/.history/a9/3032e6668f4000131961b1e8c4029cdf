@@ -1,0 +1,12 @@
+package Molygon;
+import java.util.ArrayList.*;
+
+
+public class molyConsole {
+	
+	ArrayList catnamesList;
+	void clearConsole() {
+		
+	}
+	
+}

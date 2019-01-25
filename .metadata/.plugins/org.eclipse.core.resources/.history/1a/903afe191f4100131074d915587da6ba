@@ -1,0 +1,11 @@
+package Molygon;
+
+
+public class molyImgBuffer {
+	private int mWidth;
+	private int mHeight;
+	private int mSize;
+	
+	private byte[] mBuffer; 
+	
+}

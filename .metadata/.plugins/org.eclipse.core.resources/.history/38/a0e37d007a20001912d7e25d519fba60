@@ -1,0 +1,15 @@
+package com.tinta.common.lua;
+
+/*
+ * Interface for lua parameter
+ */
+public interface tintaILuaParam {
+
+	public String getName();
+	
+	public String getDescription();
+	
+	public int call( tintaLua context );
+
+	
+}

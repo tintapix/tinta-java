@@ -1,0 +1,222 @@
+package com.tinta.common.socket;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+
+import com.tinta.build.tintaBuild;
+import com.tinta.build.tintaBuild.molyDebugMode;
+import com.tinta.common.molyILogger;
+import com.tinta.common.tintaDebug;
+import com.tinta.common.molyILogger.molyMsgLevel;
+
+
+public class tintaSocketSet  implements tintaClientSocket.ICloseClientHandler {
+		
+	
+	public interface IReceiveHandler {
+		public void onReceive(long recipient, final byte[] data);
+	}
+	
+	public interface tintaIClientAction{
+		
+		public void clientAdded( long id, tintaClientSocket client );
+		
+		public void clientRemoved( long id );
+	}
+
+	public tintaSocketSet(){
+	}
+	
+	
+	public void onClose( tintaClientSocket client ){
+		removeConnection( client );
+	}
+	
+	public long addConnection( tintaClientSocket socket ){		
+				
+		SocketObject obj = new SocketObject(genId(), socket );	
+		
+		socket.addReceiver( obj );	
+		socket.setCloseHanler( this );
+		
+		mClients.add( obj );
+		
+		mIterator = mClients.iterator();
+		
+		for (tintaIClientAction a : mClientHandlers)
+			a.clientAdded(obj.mId, obj.mSocket);
+		
+		if( tintaBuild.mMode == molyDebugMode.DEBUG ){
+			molyILogger log = tintaDebug.getLogger();			
+			if( log != null )
+				log.logMsg( "Client  " + mIdGen + " added ", molyMsgLevel.MSG_INFO );
+		}	
+		
+		return mIdGen;
+	}
+
+	public long addConnection( String host, int port ){		
+		
+		tintaClientSocket socket = new tintaClientSocket(host,port);	
+		
+		if( socket.closed() ){
+			return -1;
+		}			
+		return addConnection( socket );			
+	}
+	
+	public void removeConnection( long id ){
+		for( SocketObject s : mClients ){
+			if(s.mId == id ){						
+				remove(s);
+				break;
+			}
+    	}	
+	}
+	
+	public void removeConnection( tintaClientSocket client ){
+		for( SocketObject s : mClients ){
+			if(s.mSocket == client ){						
+				remove(s);			
+				break;
+			}
+    	}	
+	}
+	
+	public final tintaClientSocket getSocket(long connection){
+		for( SocketObject s : mClients ){
+			if(s.mId == connection ){						
+				return s.mSocket;
+			}
+    	}	
+		return new tintaClientSocket();
+	}
+	
+	public void addReceiver(long recipient, tintaSocketSet.IReceiveHandler receiver){
+		if(receiver != null){			
+			for( SocketObject s : mClients ){
+				if(s.mId == recipient ){
+					if( !s.mReceivers.contains(receiver) )				
+						s.mReceivers.add(receiver);
+					
+					break;
+				}
+	    	}			
+		}			
+	}
+	
+	public void removeReceiver(long recipient, tintaSocketSet.IReceiveHandler receiver){
+		if( receiver != null ){			
+			for( SocketObject s : mClients ){
+				if( s.mId == recipient ){
+					s.mReceivers.remove(receiver);										
+					break;
+				}
+	    	}			
+		}
+	}
+	
+	public final SocketObject getNextClient(boolean first) {
+		if( first )
+			mIterator = mClients.iterator();
+		if(mIterator.hasNext())
+			return mIterator.next();
+		return new SocketObject();
+	}
+	public void clear() {		
+		for( SocketObject s : mClients ){									
+				s.mSocket.close();							
+    	}	
+		mClients.clear();
+		mIterator = mClients.iterator();
+	}
+	
+	public class SocketObject implements tintaClientSocket.IReceiveHandler {
+		
+		public SocketObject(){			
+		}
+		
+		public SocketObject(long id, tintaClientSocket socket ){	
+			mId = id;
+			mSocket = socket;			
+		}
+		
+		public void onReceive(final byte[] data){		
+							
+			for( tintaSocketSet.IReceiveHandler h :  mReceivers ){
+				h.onReceive(mId, data);
+			}
+		}
+		public long getId(){
+			return mId;
+		}
+		private long mId = -1;
+		private tintaClientSocket mSocket = null;
+		private List<tintaSocketSet.IReceiveHandler> mReceivers = new ArrayList<tintaSocketSet.IReceiveHandler>(); 
+	}
+	
+	public void addClientHandler(tintaIClientAction h){
+		if(h != null && !mClientHandlers.contains(h))
+			mClientHandlers.add(h);
+	}
+	
+	public void removeClientHandler(tintaIClientAction h){
+		if(h != null && mClientHandlers.contains(h))
+			mClientHandlers.remove(h);
+	}
+	
+	public boolean sendData( long recipient , final byte[] data ) {
+		for( SocketObject s : mClients ){
+			if( s.mId == recipient ) {
+				try {
+					s.mSocket.sendData( data );
+					return true;
+				} catch( IOException ex ) {
+					molyILogger log = tintaDebug.getLogger();
+					
+					if( log != null )
+						log.logMsg(ex.getMessage(), molyMsgLevel.MSG_EXCEPTION);
+					
+				}
+			}
+    	}
+		return false;
+	}
+	private void remove(SocketObject obj){
+							
+		obj.mSocket.close();
+		obj.mReceivers.clear();
+			
+		for (tintaIClientAction a : mClientHandlers)
+			a.clientRemoved(obj.mId);
+		
+		if( tintaBuild.mMode == molyDebugMode.DEBUG ){
+			molyILogger log = tintaDebug.getLogger();			
+			if( log != null )
+				log.logMsg( "Connection client  " + obj.mId + " removed ", molyMsgLevel.MSG_INFO );
+		}
+			
+		mClients.remove(obj);
+		mIterator = mClients.iterator();
+			
+		
+	}
+	
+	public long genId(){
+		return ++mIdGen;
+	}
+	
+	
+	private long mIdGen = 0;	
+	
+	private Vector<SocketObject> mClients = new Vector<SocketObject>();
+	
+	private Iterator<SocketObject> mIterator = mClients.iterator();
+	
+	private List<tintaIClientAction> mClientHandlers = new ArrayList<tintaIClientAction>();
+	
+	
+}

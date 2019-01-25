@@ -1,0 +1,26 @@
+package Molygon;
+import java.util.*;
+
+
+public class molyConsole {
+	
+	ArrayList<String> consoleList;
+	
+	void clearConsole() {
+		consoleList.clear();
+	}
+	
+	void addMsg(String msg){
+		consoleList.add(msg);
+	}
+	
+	String getLastMsg(){
+		
+		if(consoleList.size() > 0){
+			Iterator<String> it = consoleList.iterator();
+			return it.next();
+		}
+		
+		return "";
+	}
+}

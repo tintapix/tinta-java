@@ -1,0 +1,17 @@
+package Molygon;
+
+import org.eclipse.swt.widgets.Composite;
+
+public class molyConsole extends Composite {
+	
+	public molyConsole(Composite parent, int style){
+	
+		super(parent, style);
+		initialize();
+	}
+	
+	private void initialize() {
+		
+	}
+
+}

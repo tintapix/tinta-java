@@ -1,0 +1,451 @@
+package demo;
+
+import java.util.ArrayList;
+import java.util.Random;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Shell;
+
+import com.tinta.windows.molyPosition;
+import com.tinta.windows.swt.molySWTConsole;
+import com.tinta.windows.swt.molySWTWindow;
+import com.tinta.math.*;
+
+public class ShooterApp extends molySWTWindow {
+
+	// private molySWTConsole mConsole;
+	private static final String windowName = "DemoDrive";
+	// private DriveApp mApp;
+	private molySWTConsole mConsole;
+
+	private  MovableUnit mplayer = null;
+	private static final int PLAYER_SIZE = 20;
+	private int ENEMY_SIZE = 10; 
+	private static final int TARGET_SIZE = 5;
+	private static final int BULLET_SIZE = 3;
+
+	// The timer interval in milliseconds
+	private static final int TIMER_INTERVAL = 1;
+
+	private static final float maxSpeed = 3.f;
+	private static final float moveSpeed = 1.5f;
+	private static final float speedChange = 0.005f;
+	
+	private static final float weaponLength = 20.f;
+	
+	private static final float shhotLength = 100.f;
+	
+	
+	// здоровье для всех
+	private double maxHealth = 100; 
+	// скорость врагов
+	private float menemyspeed = 0.01f;
+	// скорость пуль пикселей за миллисеккунду
+	private float mshootspeed = 0.4f;
+	// время ожидания перезарядки в миллисекундах
+	private double mshootWait = 100.;
+	// время после последнего выстрела
+	private double mshootLast =  System.currentTimeMillis();
+	
+	// повреждение от пули
+	private double mbulletDamage = 100;
+	
+	private int mxAreaSize = 0;
+	private int myAreaSize = 0;
+	// количество врагов
+	private int enemiesCount = 10;
+	
+	private long     mTimeLast = System.currentTimeMillis();
+	// We draw everything on this canvas
+	private Canvas   canvas;
+	private Display  mdisplay = null;
+	private GameArea marea    = new GameArea();
+	
+	private boolean crossed(Unit u1, Unit u2){
+		
+		double xShift = Math.abs( u1.getCurPos().mx - u2.getCurPos().mx );
+		double yShift = Math.abs( u1.getCurPos().my - u2.getCurPos().my );
+		
+		return     xShift < Math.min( u1.getSize(), u2.getSize() )/2 
+				&& yShift < Math.min( u1.getSize(), u2.getSize() )/2;
+	}
+	private void CalcCollisions(){
+		
+		ArrayList<Unit> others = marea.getOthers();
+		int size = others.size();		
+		for( int i = 0; i < size; i++ ){			
+			Unit other =  others.get( i );				
+			//crossed( other );
+			ArrayList<Unit> units = marea.getUnits();
+			int iunits = units.size();		
+			for( int c = 0; c < iunits; c++ ){				
+				Unit enemy =  units.get( c );					
+				if( crossed( other, enemy ) ){
+					enemy.setDead( true );
+				}
+			}
+		}
+		
+	}
+	public ShooterApp(Display display, int xAreaSize, int yAreaSize) {
+	
+		super(windowName, new molyPosition(100, 100),
+				new molyPosition(xAreaSize, yAreaSize), display, -1);
+		
+		mplayer = new MovableUnit(mdisplay, PLAYER_SIZE, 0.f, maxHealth, maxHealth ); 
+		mplayer.getCurPos().mx = xAreaSize/2;
+		mplayer.getCurPos().my = yAreaSize/2;
+		
+		mdisplay = display;		
+		mxAreaSize = xAreaSize;
+		myAreaSize = yAreaSize;		
+		
+		setCaption("Shooter");
+		initUI();
+		initEnemies();
+		createContents(mWindow);
+		mWindow.open();
+		mWindow.getDisplay().addFilter(SWT.MouseDown, new Listener() {
+			public void handleEvent( Event event ) {
+				if ( event.widget instanceof Control ) {
+					
+					Point p = Display.getCurrent().map(
+							null, 
+							null, 
+							event.x,
+							event.y);
+					
+					mplayer.mdistpos.mx = p.x;
+					mplayer.mdistpos.my = p.y;				
+				}
+			}
+		} );
+
+		// обновляем для игрока
+		Runnable runnable = new Runnable() {
+			public void run() {
+				
+				animate( mplayer, mTimeLast );
+				ArrayList<Unit> others = marea.getOthers();
+				int size = others.size();
+				boolean speedIsZero = false;
+				for( int i = 0; i < size; i++ ){
+					Unit other =  others.get( i );	
+					animate( other, mTimeLast );
+					if( other.getSpeed() <= 0. )
+						speedIsZero = true;
+				}
+				if( speedIsZero )
+					marea.delFirst();
+				CalcCollisions();
+				mTimeLast =  System.currentTimeMillis();
+				mWindow.getDisplay().timerExec(TIMER_INTERVAL, this);
+			}
+		};
+		
+		/*
+		// передвигаем по таймеру врагов		
+		Runnable positions = new Runnable() {
+			public void run() {
+				
+				//System.out.println("getUnits");
+				
+				ArrayList<Unit> units = marea.getUnits();
+				int size = units.size();
+				for(int i = 0; i < size; i++ ){
+					tintaVector2  pos = units.get( i ).getCurPos();	
+					
+				}
+		
+			}
+		};
+*/
+		// Launch the timer
+		display.timerExec(TIMER_INTERVAL, runnable);
+		Listener listener = new Listener() {
+			public void handleEvent(Event event) {
+				// System.out.println("Key" + event.type);
+				if (event.type == SWT.KeyDown) {
+					switch (event.keyCode) {
+					
+					case SWT.SPACE:
+						//System.out.println("Key PAGE_UP");
+						// проверка времени перезарядки
+						if(  ( System.currentTimeMillis() - mshootLast ) > mshootWait ){
+							mshootLast = System.currentTimeMillis();
+							// стреляем
+							Unit unit = new EnemyUnit(mdisplay, (float)BULLET_SIZE, mshootspeed, 0., 0., 2. );
+							unit.getCurPos().mx = mplayer.getCurPos().mx;
+							unit.getCurPos().my = mplayer.getCurPos().my;
+							
+							unit.getDistPos().mx = mplayer.getDistPos().mx;
+							unit.getDistPos().my = mplayer.getDistPos().my;
+							
+							marea.addAnimate( unit );
+						}										
+						break;
+					case SWT.ARROW_LEFT:
+						
+						tintaMatrix2 rot = new tintaMatrix2();
+						rot.fromAngle( 0.1f );
+						tintaVector2  col0 =  rot.getColumn(0);
+						tintaVector2  col1 =  rot.getColumn(1);
+						float x = (float) ( col0.mx * mplayer.mDirection.mx + 
+								col0.my * mplayer.mDirection.my ) ;
+						
+						float y = (float) ( col1.mx * mplayer.mDirection.mx + 
+								col1.my * mplayer.mDirection.my ) ;
+						
+						
+						mplayer.mDirection.mx = x;
+						mplayer.mDirection.my = y;
+						//mplayer.mDirection.normalize();
+						System.out.print(mplayer.mDirection.mx);
+						System.out.print(" ");
+						System.out.print(mplayer.mDirection.my);
+						System.out.print("\n");
+						
+						break;
+					} 
+					if( event.keyCode  == 'a' ){
+						tintaVector2 v = new tintaVector2(mplayer.mDirection);
+						float x = v.mx; 
+						v.mx = -v.my;
+						v.my = x;
+						
+						mplayer.mcurpos.mx  +=  v.mult(moveSpeed).mx;
+						mplayer.mcurpos.my  +=  v.mult(moveSpeed).my;
+					}
+					else if( event.keyCode  == 'd'){
+						tintaVector2 v = new tintaVector2(mplayer.mDirection);
+						v.my *= -1.f;
+						mplayer.mcurpos.mx  +=  v.mult(moveSpeed).mx;
+						mplayer.mcurpos.my  +=  v.mult(moveSpeed).my;
+						mplayer.mcurpos.mx += moveSpeed;
+					}
+					else if( event.keyCode  == 'w'){
+											
+						
+						tintaVector2 v = new tintaVector2(mplayer.mDirection);
+						mplayer.mcurpos.mx  +=  v.mult(moveSpeed).mx;
+						mplayer.mcurpos.my  +=  v.mult(moveSpeed).my;
+						
+					}
+					else if( event.keyCode  == 's'){
+						
+						
+						
+						tintaVector2 v = new tintaVector2(mplayer.mDirection);
+						v.mult(-1.f);
+						mplayer.mcurpos.mx  +=  v.mult(moveSpeed).mx;
+						mplayer.mcurpos.my  +=  v.mult(moveSpeed).my;
+					}				
+					
+					
+				} // if(event.type == SWT.KeyDown)
+			}
+		};
+		canvas.addListener(SWT.KeyDown, listener);
+		while (!mWindow.isDisposed()) {
+			if (!display.readAndDispatch()) {
+				display.sleep();
+			}
+		}
+		// Kill the timer
+		display.timerExec(-1, runnable);
+		display.dispose();
+	}
+
+	public void initEnemies(){
+		
+		if(mdisplay == null)
+			return;
+		Random rn = new Random();		
+		
+		for(int c  = 0; c < enemiesCount; c++ ){
+			Unit unit = new EnemyUnit(mdisplay, ENEMY_SIZE, menemyspeed, maxHealth, maxHealth, 2. );
+			
+			int xPos = rn.nextInt(mxAreaSize - PLAYER_SIZE);
+			int yPos = rn.nextInt(myAreaSize - PLAYER_SIZE);
+			
+			unit.getCurPos().mx = xPos;
+			unit.getCurPos().my = yPos;
+			marea.addUnit(unit);
+		}
+	}
+		
+	public void initUI() {
+
+		Menu menuBar = new Menu(mWindow, SWT.BAR);
+		MenuItem cascadeMenu = new MenuItem(menuBar, SWT.CASCADE);
+		cascadeMenu.setText("&File");
+
+		Menu fileMenu = new Menu(mWindow, SWT.DROP_DOWN);
+		cascadeMenu.setMenu(fileMenu);
+
+		MenuItem exitItem = new MenuItem(fileMenu, SWT.PUSH);
+		exitItem.setText("&Exit");
+
+		MenuItem cascadeViewsMenu = new MenuItem(menuBar, SWT.CASCADE);
+		cascadeViewsMenu.setText("&Views");
+
+		Menu viewsMenu = new Menu(mWindow, SWT.DROP_DOWN);
+		cascadeViewsMenu.setMenu(viewsMenu);
+
+		MenuItem consoleMenu = new MenuItem(viewsMenu, SWT.PUSH);
+		consoleMenu.setText("&Console");
+
+		//
+		mWindow.setMenuBar(menuBar);
+
+		exitItem.addSelectionListener(new SelectionAdapter() {
+
+			public void widgetSelected(SelectionEvent e) {
+				mWindow.getDisplay().dispose();
+				System.exit(0);
+			}
+		});
+
+		consoleMenu.addSelectionListener(new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent e) {
+				mConsole = new molySWTConsole(mWindow, SWT.CLOSE | SWT.RESIZE,
+						new molyPosition(800, 800), new molyPosition(400, 400));
+
+				mConsole.show();
+			}
+
+		});
+	}
+
+	
+	private void createContents(final Shell shell) {
+
+		shell.setLayout(new FillLayout());
+		// Create the canvas for drawing
+		canvas = new Canvas(shell, SWT.NO_BACKGROUND);
+		canvas.addPaintListener(new PaintListener() {
+			public void paintControl(PaintEvent event) {
+				// Create the image to fill the canvas
+				Image image = new Image(shell.getDisplay(), canvas.getBounds());
+				// Set up the offscreen gc
+				GC gcImage = new GC(image);
+
+				// Draw the background
+				gcImage.setBackground(event.gc.getBackground());
+				gcImage.fillRectangle(image.getBounds());
+
+				// Set the color of the ball
+				gcImage.setBackground(shell.getDisplay().getSystemColor(
+						SWT.COLOR_BLUE));
+
+				
+				// Draw the player
+				double size = mplayer.getSize();
+				gcImage.fillOval(
+						(int)(mplayer.getCurPos().mx-size/2), 
+						(int)(mplayer.getCurPos().my-size/2),
+						(int)size, 
+						(int)size);
+				
+				tintaVector2 length = new tintaVector2(mplayer.mDirection);
+				
+				
+				
+				
+				length.mult(weaponLength);
+				gcImage.drawLine((int)mplayer.getCurPos().mx, (int)mplayer.getCurPos().my, (int)mplayer.getCurPos().mx + (int)length.mx, (int)mplayer.getCurPos().my + (int)length.my);
+				
+				gcImage.setBackground(shell.getDisplay().getSystemColor(
+						SWT.COLOR_RED));
+
+				// Draw target
+				gcImage.fillOval((int) mplayer.mdistpos.mx, (int) mplayer.mdistpos.my,
+						TARGET_SIZE, TARGET_SIZE);
+				
+				ArrayList<Unit> units = marea.getUnits();
+				int u = units.size();
+				for(int i = 0; i < u; i++ ){
+					Unit unit = units.get( i );
+					tintaVector2  pos = unit.getCurPos();
+					// смотрим что не подбитый
+					if( !unit.isDead() )
+						gcImage.setBackground(shell.getDisplay().getSystemColor(
+							SWT.COLOR_CYAN));
+					else
+						gcImage.setBackground(shell.getDisplay().getSystemColor(
+								SWT.COLOR_BLACK));
+					size = unit.getSize();
+					gcImage.fillOval( (int) (pos.mx-size/2), 
+							(int)(pos.my-size/2),
+							(int)size, 
+							(int)size);					
+				}
+				
+				ArrayList<Unit> others = marea.getOthers();
+ 				int bullets = others.size();
+				for( int i = 0; i < bullets; i++ ){
+					Unit bullet = others.get( i );
+					tintaVector2  pos = bullet.getCurPos();		
+					
+					gcImage.setBackground(shell.getDisplay().getSystemColor(
+							SWT.COLOR_RED));
+					
+					size = bullet.getSize();
+					
+					gcImage.fillOval(
+							(int)(pos.mx-size/2), 
+							(int)(pos.my-size/2),
+							(int)size, 
+							(int)size);					
+				}
+				
+				// Draw the offscreen buffer to the screen
+				event.gc.drawImage(image, 0, 0);
+
+				// Clean up
+				image.dispose();
+				gcImage.dispose();
+			}
+		});
+	}
+	
+	public void animate(Unit unit, long lastTime) {
+		
+
+		long elapsed = System.currentTimeMillis() - lastTime;
+
+		if ( unit.getSpeed() > 0. && !unit.getCurPos().equal( unit.getDistPos() ) ) {
+
+			float dist = tintaVector2.distance( unit.getCurPos(), unit.getDistPos() );
+			float step = elapsed * unit.getSpeed();
+			
+			unit.getCurPos().mx = tintaUtilMath.tintaLerp(unit.getCurPos().mx, unit.getDistPos().mx, step / dist );
+			unit.getCurPos().my = tintaUtilMath.tintaLerp(unit.getCurPos().my, unit.getDistPos().my, step / dist );		
+		}
+		else
+			unit.setSpeed (0.f);
+
+		
+		canvas.redraw();
+	}	
+	public static void main(String[] args) {
+		Display display = new Display();
+		new ShooterApp(display, 1000, 1000);
+	}
+
+}

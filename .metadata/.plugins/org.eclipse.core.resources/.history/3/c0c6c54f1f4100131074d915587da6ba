@@ -1,0 +1,36 @@
+package Molygon;
+
+
+public class molyImgBuffer {
+	private int mWidth;
+	private int mHeight;
+	private int mSize;
+	
+	private byte[] mBuffer;
+	
+	public molyImgBuffer(){
+		mWidth = -1;
+		mHeight = -1;
+		mSize = -1;
+		mBuffer = new byte[]{};		
+	}
+	
+	
+	public molyImgBuffer(int width, int height, int size){
+		mWidth = -1;
+		mHeight = -1;
+		mSize = -1;
+		mBuffer = new byte[]{};		
+	}
+	
+	
+	public molyImgBuffer(int width, int height, int size, byte[] buff){
+		mWidth = -1;
+		mHeight = -1;
+		mSize = -1;
+		mBuffer = new byte[]{};		
+	}
+	
+	
+	
+}

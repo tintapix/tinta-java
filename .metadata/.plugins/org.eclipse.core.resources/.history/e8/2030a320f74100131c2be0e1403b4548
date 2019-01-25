@@ -1,0 +1,18 @@
+package Molygon;
+
+
+
+public class molySingleton {
+	   // Private constructor prevents instantiation from other classes
+	   private molySingleton() {}
+	 	   	   
+	   private static class SingletonHolder {
+		   
+	     private static final molySingleton INSTANCE = new molySingleton();
+	     
+	   }
+	 
+	   public static molySingleton getInstance() {
+	     return SingletonHolder.INSTANCE;
+	   }
+	 }

@@ -1,0 +1,71 @@
+/**
+ * Copyright (C) 2011 - 2019 Mikhail Evdokimov 
+ * tintapix.com
+ * tintapix@gmail.com
+ */
+
+package com.tinta.common;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+public class tintaOutLog implements tintaILogger  {
+	
+	public static String createPrefix( molyMsgLevel level ){
+		return tintaOutLog.createPrefix(level, true);
+	}	
+	
+	public static String createPrefix( molyMsgLevel level , boolean timeStump){
+		StringBuffer buf = new StringBuffer();
+		if( timeStump ){
+			 SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//dd/MM/yyyy
+			 Date now = new Date();
+			 buf.append( sdfDate.format(now) );
+		}
+		buf.append( " " );
+		if( level == molyMsgLevel.MSG_ASSERT ){
+			buf.append("ASSERT: ");				
+		}
+		else if ( level == molyMsgLevel.MSG_EXCEPTION ){
+			buf.append("EXCEPTION: ");	
+		}
+		
+		return buf.toString();		
+	}
+	
+	/**
+	 * Adds listener
+	 */
+	public void addOutput(tintaIOnMsg out){
+		if( !mOutputs.contains(out) )
+			mOutputs.add(out );
+	}
+	
+	/**
+	 * Removes listener
+	 */
+	public void removeOutput(tintaIOnMsg out){
+		mOutputs.remove(out);
+	}
+	
+	public void logMsg( String msg, molyMsgLevel level ){	
+		
+		StringBuffer buf = new StringBuffer();
+		buf.append( createPrefix( level, true ));
+		buf.append( msg );
+		
+		System.out.print( buf.toString() );
+		
+		for( tintaIOnMsg out : mOutputs )
+			out.onMsg( buf.toString()  );
+	}
+	
+	public void logMsg( String msg )	{
+		this.logMsg( msg, tintaILogger.molyMsgLevel.MSG_INFO );
+	}
+	
+	private List<tintaIOnMsg> mOutputs = new ArrayList<tintaIOnMsg>(); 
+
+}

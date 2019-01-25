@@ -1,0 +1,19 @@
+package Molygon;
+
+static String strMainFrameName  = "";
+
+
+public interface molyIWindow {
+
+	
+	public String  getWndName();
+
+	public molyPosition getWndPos();	
+	
+	public molyPosition getWndSize();	
+	
+	public void setWndPos();	
+	
+	public void setWndSize();
+	
+}

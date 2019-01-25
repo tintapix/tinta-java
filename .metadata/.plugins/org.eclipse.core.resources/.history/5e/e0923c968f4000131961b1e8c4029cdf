@@ -1,0 +1,13 @@
+package Molygon;
+import java.util.*;
+
+
+public class molyConsole {
+	
+	ArrayList<String> consoleList;
+	
+	void clearConsole() {
+		consoleList.clear();
+	}
+	
+}

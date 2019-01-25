@@ -1,0 +1,52 @@
+package demo;
+
+import com.tinta.math.tintaVector2;
+
+/*
+ * Интерфейс любой преждмет появляемый в сцене(неподвижные, подвижные ) 
+ */
+public interface Unit extends IDrawable {		
+	
+	// определяет будет ли расчитываться целевая координата
+	public boolean isMovable();
+	
+	// получаем тип персонажа
+	//public Unittype getType();
+	
+	//если вернет true , то не обновлять состояние
+	public boolean isDead();
+	
+	//если вернет true , то не обновлять состояние
+	public void setDead( boolean dead );
+	
+	// метод возвращает текущее здоровье 
+	public double getHealth();
+	
+	// метод возвращает максимальное возможное здоровье
+	public double getMaxHealth();
+	
+	// метод возвращает скорость
+	public float getSpeed();
+	
+	// метод возвращает скорость
+	public void setSpeed(float speed);
+		
+	
+	// уменьшить здоровье на величниу, если результат < 0, то приравниваем к 0
+	public void decreaseHealth(double onVal);
+	
+	// увеличить здоровье на величниу, если результат > макс_здоровье , то приравниваем к макс_здоровье
+	public void increaseHealth(double onVal);	
+	
+	// получить ссылку на заданное положение	
+	public tintaVector2 getDistPos();
+	
+	// получить ссылку на текущее положение
+	public tintaVector2 getCurPos();
+	
+	public double getSize();
+	
+	public void setSize( float size );
+	
+
+}

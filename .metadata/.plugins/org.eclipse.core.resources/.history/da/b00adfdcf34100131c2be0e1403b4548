@@ -1,0 +1,8 @@
+package Molygon;
+
+public class molySingleton < T >{
+	
+	private static String instance = new String();
+	
+
+}

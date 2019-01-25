@@ -1,0 +1,84 @@
+/**
+ * Copyright (C) 2011 - 2019 Mikhail Evdokimov 
+ * tintapix.com
+ * tintapix@gmail.com
+ */
+
+
+package com.tinta.common.image;
+
+import com.tinta.math.tintaUtilMath;
+
+public class tintaRGBf {
+	private static final short channels = 3;
+	
+	private final float mData [] =  {0.f, 0.f, 0.f}; 
+
+	private int mPacked;
+	
+	private void updatePacked(){
+		mPacked = tintaUtilMath.packColor3( tintaUtilMath.floatToByte(mData[0]), 
+				tintaUtilMath.floatToByte(mData[1]), 
+					tintaUtilMath.floatToByte(mData[2])	);
+	}
+	
+	public tintaRGBf(){}
+	public tintaRGBf(  final float data [] ){
+		System.arraycopy(data, 0, mData, 0, channels);	
+		updatePacked();
+	}
+	public tintaRGBf(  final tintaRGBf rv ){
+		System.arraycopy(rv.mData, 0, mData, 0, channels);	
+		mPacked = rv.mPacked;
+	}
+	public tintaRGBf(  float r, float g, float b ){
+		mData[0] = r;
+		mData[1] = g;
+		mData[2] = b;
+		updatePacked();
+	}
+	
+	public tintaRGBf(  final short data [] ){
+		
+		assert data.length <= channels : "array length";
+		
+		mData[0] = tintaUtilMath.byteToFloat(data[0]);
+		mData[1] = tintaUtilMath.byteToFloat(data[1]);
+		mData[2] = tintaUtilMath.byteToFloat(data[2]);
+		mPacked = tintaUtilMath.packColor3(data[0], data[1], data[2]);
+	}
+
+	public tintaRGBf(  final tintaRGB rv ){
+		
+		mData[0] = tintaUtilMath.byteToFloat(rv.getData()[0]);
+		mData[1] = tintaUtilMath.byteToFloat(rv.getData()[1]);
+		mData[2] = tintaUtilMath.byteToFloat(rv.getData()[2]);
+		mPacked = tintaUtilMath.packColor3(rv.getData()[0], rv.getData()[1], rv.getData()[2]);
+	}
+	
+	
+	
+	public tintaRGBf(  short r, short g, short b ){
+		mData[0] = tintaUtilMath.byteToFloat(r);
+		mData[1] = tintaUtilMath.byteToFloat(g);
+		mData[2] = tintaUtilMath.byteToFloat(b);
+		mPacked = tintaUtilMath.packColor3(r, g, b);
+	}
+	
+	
+	
+	
+	public final float[] getData(){
+		return mData;
+	}
+	public void setData( int channel, float val ){
+		assert channel > 0 && channel < channels : "array boundary error";
+		mData[channel] = val;
+		updatePacked();
+	}
+	
+	public float getData( int channel ){
+		assert channel > 0 && channel < channels : "array boundary error";
+		return mData[channel];
+	}
+}

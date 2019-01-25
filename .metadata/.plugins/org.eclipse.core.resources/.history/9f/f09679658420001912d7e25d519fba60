@@ -1,0 +1,348 @@
+/**
+ * Copyright (C) 2011 - 2019 Mikhail Evdokimov 
+ * tintapix.com
+ * tintapix@gmail.com
+ */
+
+package com.tinta.common;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Vector;
+
+
+
+
+public class tintaUtilSystem {
+	
+	public enum EncodTypes {
+		UTF8 ,
+		UTF8_NOBOM ,
+		UTF16 ,
+		UTF16_NOBOM ,		
+		USASCII,
+		NO_ENCODE;
+	}
+	public static final byte[] UTF8_BOM = {(byte)0xEF,(byte)0xBB,(byte)0xBF};	
+	
+	public static final byte[] UTF16_BEBOM = {(byte)0xFE,(byte)0xFF};
+	
+	public static final byte[] UTF16_LEBOM = {(byte)0xFF,(byte)0xFE};    
+	
+	public static final byte[] UTF32_BEBOM = {(byte)0x00,(byte)0x00, (byte)0xFF,(byte)0xFE}; 
+	
+	public static final byte[] UTF32_LEBOM = {(byte)0xFF,(byte)0xFE,(byte)0x00,(byte)0x00}; 
+	
+	public static final String UTF8_NAME 	= "UTF-8";
+	
+	public static final String UTF16_NAME 	= "UTF-16";
+	
+	public static final String UTF32_NAME 	= "UTF-32";
+	
+	public static final String USASCII_NAME = "US-ASCII";	
+	
+	
+	//public static final int BOM_SIZE = 2;
+	
+	/**
+	 * Returns root directory
+	 * @return root directory
+	 */
+	static public String getRootDir() {
+		final String dir = System.getProperty("user.dir");
+		return dir;
+	    //System.out.println("current dir = " + dir);
+	}	
+	
+	
+	static String getEncodeNameType( EncodTypes type ){
+		
+		switch( type ) {
+		case UTF8:
+		case UTF8_NOBOM:
+		return UTF8_NAME;		  // "UTF8"
+		case UTF16:
+			return UTF16_NAME;  // "UTF16"		
+		case USASCII:
+			return USASCII_NAME;// "US-ASCII"
+		default:
+			return "";		
+		}		
+	}
+	
+	/**
+	 * Determines the path state: absolute or not  
+	 * @param  path - path to test
+	 * 
+	 * */
+	static public boolean isPathAbs( final String path ){
+		
+		File file = new File(path);
+		return file.isAbsolute();		   
+		
+	}
+	
+	/**
+	 * Return File Encoding type 
+	 * @param path - path to the file
+	 **/
+	static public EncodTypes getFileEncoding(String path) {
+					
+		InputStream is = null;
+		EncodTypes type = EncodTypes.NO_ENCODE; //EncodTypes.USASCII;
+		try {
+			
+			
+			final byte  buffer[] = new byte[4];
+			is = new FileInputStream( path );
+			is.read( buffer );			
+			
+			if( buffer[0] ==  UTF8_BOM[0] &&  
+					buffer[1] ==  UTF8_BOM[1] && 
+						buffer[2] ==  UTF8_BOM[2] ) {
+				type = EncodTypes.UTF8;					
+			}
+			else if( buffer[0] ==  UTF16_LEBOM[0] &&  
+					buffer[1] ==  UTF16_LEBOM[1] ) {
+				type = EncodTypes.UTF16;					
+			}
+			else if( buffer[0] ==  UTF16_BEBOM[0] &&  
+					buffer[1] ==  UTF16_BEBOM[1] ) {
+				type = EncodTypes.UTF16;					
+			}		
+			else
+				type = EncodTypes.UTF8_NOBOM;
+			//s.startsWith(UTF8_BOM);
+			is.close();			
+		}
+		catch( FileNotFoundException e){
+			
+		}
+		catch(IOException e){
+			
+		}		
+		
+		return type;			
+		
+	}
+	  
+	/**
+	 *  Reads lines from to the file
+	 * @param path - path to the file	 * 
+	 * @param result - lines vector 
+	 * */
+	static public EncodTypes tintaReadFile( final String path, ArrayList<String> result ){
+		tintaUtilSystem.EncodTypes enc = tintaUtilSystem.getFileEncoding(path);
+		if( enc != EncodTypes.NO_ENCODE && tintaReadFile(path, enc, result ) )
+			return enc;
+		return EncodTypes.NO_ENCODE;
+	}
+	
+	
+	/**
+	 *  Reads text from the file
+	 * @param path - path to the file	 * 
+	 * @return text 
+	 * */
+	static public String tintaReadFile( final String path ){
+		
+		molyILogger l = tintaDebug.getLogger();
+		StringBuffer sb = new StringBuffer();
+		try {   	    
+		    EncodTypes encoding = getFileEncoding(path);
+		    
+		    String type = getEncodeNameType( encoding );	
+		    
+		    BufferedReader reader = new BufferedReader(
+                   new InputStreamReader(new FileInputStream(path), type));	    
+		    	
+			String line = reader.readLine();		
+			if( encoding == tintaUtilSystem.EncodTypes.UTF8 )
+				line = line.substring(1); // remove BOM mark
+				
+		    while( line != null ) {		    	
+		    	sb.append( line );	
+		    	
+			 line = reader.readLine();
+			 
+			 if( line != null )
+				 sb.append( "\n" );
+		    }
+			//}
+		    //text.close();
+		    reader.close();
+		    
+		}
+		catch(FileNotFoundException e){
+			
+		   if( l != null )
+			   l.logMsg( e.getLocalizedMessage(), molyILogger.molyMsgLevel.MSG_EXCEPTION );
+		   else
+			   System.out.print(e.getLocalizedMessage());
+		   
+		   return new String();
+		}
+		catch(IOException e){
+			
+			   if( l != null )
+				   l.logMsg( e.getLocalizedMessage(), molyILogger.molyMsgLevel.MSG_EXCEPTION );
+			   else
+				   System.out.print(e.getLocalizedMessage());
+		    return new String();
+		}	
+		
+		return sb.toString();
+	}
+	
+	
+	
+	/**
+	 *  Reads lines from to the file
+	 * @param path - path to the file
+	 * @param encoding - UTF-8, ASCII
+	 * @param result - lines vector 
+	 * */
+	static public boolean tintaReadFile( final String path, final EncodTypes encoding,  ArrayList<String> result ){
+		molyILogger l = tintaDebug.getLogger();
+		try {   
+		    
+		    FileReader fr = new FileReader(path); 
+		    BufferedReader text = new BufferedReader(fr);	    
+		     
+		    //String textBody;
+		    String type = getEncodeNameType( encoding );
+		    BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(new FileInputStream(path), type));
+		    					String line = reader.readLine();
+		    						
+		 
+			if( encoding == tintaUtilSystem.EncodTypes.UTF8 )
+				line = line.substring( 1 );					
+		    while( line != null) {	
+		    	
+			 result.add(line);	
+			 line = reader.readLine();
+			 
+		    } 	    	    
+		    text.close();
+		    reader.close();
+		}
+		catch(FileNotFoundException e){
+			
+		   if( l != null )
+			   l.logMsg( e.getLocalizedMessage(), molyILogger.molyMsgLevel.MSG_EXCEPTION );
+		   else
+			   System.out.print(e.getLocalizedMessage());
+		   
+		   return false;
+		}
+		catch(IOException e){
+			
+			   if( l != null )
+				   l.logMsg( e.getLocalizedMessage(), molyILogger.molyMsgLevel.MSG_EXCEPTION );
+			   else
+				   System.out.print(e.getLocalizedMessage());
+		    return false;
+		}	
+		
+		return true;
+	}
+	
+	
+	
+	/**
+	 * Writes lines in to the file
+	 * @param path - path to the file
+	 * @param encoding - UTF-8, ASCII
+	 * @param result - lines vector 
+	 * */
+	static public boolean tintaWriteFile( final String path, final EncodTypes encoding,  final ArrayList<String> result ){
+			
+		 boolean r = false;
+		 String type = getEncodeNameType( encoding );
+	     if( type.length() == 0 )
+	    	 type = getEncodeNameType(getFileEncoding(path));
+	     molyILogger l = tintaDebug.getLogger();
+	     try {
+		     BufferedWriter out = new BufferedWriter( new OutputStreamWriter(
+				    new FileOutputStream(path), type) );
+		     
+		     try {
+		    	 for( String v : result){
+		    		 out.write(v);	
+		    		 out.newLine();
+				 }
+		    	 out.close();
+		    	 r = true;
+		     }
+		     catch(  IOException e )
+		     {		    	 
+		    	 
+				   if( l != null )
+					   l.logMsg( e.getLocalizedMessage(), molyILogger.molyMsgLevel.MSG_EXCEPTION );
+				   else
+					   System.out.print(e.getLocalizedMessage());
+		     }	    	     
+		     
+	     }	
+	     catch(UnsupportedEncodingException us){
+	    	 
+			   if( l != null )
+				   l.logMsg( us.getLocalizedMessage(), molyILogger.molyMsgLevel.MSG_EXCEPTION );
+			   else
+				   System.out.print(us.getLocalizedMessage());
+	     }
+	     catch(FileNotFoundException ef){
+	    	 
+			   if( l != null )
+				   l.logMsg( ef.getLocalizedMessage(), molyILogger.molyMsgLevel.MSG_EXCEPTION );
+			   else
+				   System.out.print(ef.getLocalizedMessage());
+	     }
+	     
+	     return r;		
+	}
+	
+	/**
+	 * Finds all files in the directory with the extension
+	 * @param dirPath - absolute path to the directory
+	 * @param extension - files extension e.g. "exe"  
+	 */
+static  public Vector<File> fillFiles(String dirPath, String extension) throws IOException {
+        
+		File path = new File(dirPath);
+	        if ( !path.exists() ) {
+	            throw new IOException("Cannot access " + dirPath + ": No such file or directory");
+	        }
+	        
+	        File[] filesTemp; 
+	        
+	        if ( path.isFile() ) {
+	            filesTemp = new File[]{path};            
+	        } else {            
+	            filesTemp = path.listFiles();         
+	        }
+	               
+	        Vector<File> files = new Vector<File>();              
+	        for(int i = 0; i < filesTemp.length; i++) {
+	            if(tintaUtilString.getFileExtension(filesTemp[i].getPath()).equals(extension)) {
+	        	files.add(filesTemp[i]);
+	            }
+	        }        
+	        return files;
+	        
+	}
+	
+	
+}

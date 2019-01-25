@@ -1,0 +1,128 @@
+package demo;
+
+//import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
+
+import com.tinta.math.tintaVector2;
+
+public class MovableUnit implements Unit {
+	
+	private Unittype mtype;
+	
+	private boolean  mdead;
+	
+	private Display mdisplay;
+	
+	private Shape mImage = new Shape(0);
+	
+	public float mspeed = 0.f;
+	
+	
+	public tintaVector2 mDirection = new tintaVector2( 1.f, 1.f );
+	
+	
+	
+	// период в миллисекундах для обновления состояния 
+	public double mtimeupdate = 0.;
+	
+	private double mhealth = 0.;
+	
+	// максимальное здоровье для юнита
+	private double mmaxhealth = 0.; 
+	
+	tintaVector2 mcurpos  = new tintaVector2( 0.f,0.f);
+	
+	tintaVector2 mdistpos = new tintaVector2( 0.f,0.f);
+	
+	
+	MovableUnit( Display display, float size, float speed, double health, double maxhealth ){
+		mdisplay = display;
+/*		
+		try {
+			//mImage = new Image ( mdisplay, imagePath );
+		}
+		catch ( Exception e ){
+			System.out.println( "Image creating error for path "  + imagePath );
+			//mImage   = new Image ( mdisplay, 10, 10 );
+		}
+*/		
+		mhealth     = health;
+		mmaxhealth  = maxhealth;
+		mspeed 		= speed;
+		//mtimeupdate = timeupdate;
+		mImage.mSize.mx = size;
+	}
+	
+//-------- Unit 
+	public void setDead( boolean dead ){
+		mdead = dead;
+	}
+	
+	// определяет будет ли расчитываться целевая координата
+	public boolean isMovable(){
+		return true;
+	}
+		
+		// получаем тип персонажа
+	public 	Unittype getType(){
+		return mtype;
+	}
+		
+		//если вернет true , то не обновлять состояние
+	public boolean isDead(){
+		return mdead;
+	}
+	
+	// метод возвращает текущее здоровье 
+	public double getHealth(){
+		return mhealth;
+	}
+	
+	// метод возвращает текущее здоровье 
+	public void setSpeed(float speed){
+		mspeed = speed;
+	}
+	
+	// метод возвращает скорость
+	public float getSpeed(){
+		return mspeed;
+	}
+	
+		
+	public double getSize(){
+		return mImage.mSize.mx;
+	}
+	
+	public void setSize( float size ){
+		mImage.mSize.mx = size;
+	}
+		// метод возвращает максимальное возможное здоровье
+	public double getMaxHealth(){
+		return mmaxhealth;
+	}
+	
+	public void decreaseHealth(double onVal){
+		if( ( mhealth -= onVal ) < 0. )
+			mhealth = 0.;		
+		
+	}
+	public void increaseHealth(double onVal) {
+		if( ( mhealth += onVal ) > mmaxhealth )
+			mhealth = mmaxhealth;	
+	}
+	
+	public tintaVector2 getCurPos(){
+		return mcurpos;
+	}
+	
+	public tintaVector2 getDistPos(){
+		return mdistpos;
+	}
+//-------- IDrawable
+	public Shape getImage(){
+		return mImage;
+	}
+//--------  
+
+
+}

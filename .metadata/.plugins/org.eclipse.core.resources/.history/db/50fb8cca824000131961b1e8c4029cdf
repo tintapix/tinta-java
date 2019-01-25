@@ -1,0 +1,12 @@
+package Molygon;
+
+public class molyPosition {
+
+	molyPosition(int xPos, int yPos){
+		
+	}
+	public int mXPos;
+	
+	public int mYPos;
+	
+}

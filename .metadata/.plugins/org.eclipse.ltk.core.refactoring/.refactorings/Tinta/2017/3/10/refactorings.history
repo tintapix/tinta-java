@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;MolyCommon/src/com/tinta/tintaSocketApp/tintaConsole.java&apos; to &apos;tintaConsoleSWT.java&apos;" description="Rename resource &apos;tintaConsole.java&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/com/tinta/tintaSocketApp/tintaConsole.java" name="tintaConsoleSWT.java" stamp="1488521435740" updateReferences="true"/>
+</session>

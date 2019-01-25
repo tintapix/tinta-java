@@ -1,0 +1,16 @@
+package Molygon;
+
+import java.util.*;
+
+public class molyApp {
+
+	private ArrayList<molyImgBuffer> mImages;
+	
+	
+	boolean executeCommand( String command ){
+		boolean rez = true; 
+		return rez;
+	}
+	
+	
+}

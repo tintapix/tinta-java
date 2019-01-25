@@ -1,0 +1,72 @@
+package com.tinta.common.lua;
+
+public class tintaLua {
+
+	private native void init();
+	
+	private native void release();
+	
+	private native void executeBuffer(String prompt, int length);	
+	
+	private native void executeFile(String filePath);
+	
+	private native int     getGlobInteger( String name );
+	
+	private native String  getGlobString( String name );
+	
+	private native float   getGlobFloat( String name );
+	
+	private native int[]   getGlobIntArray( String name );
+	
+	private native float[] getGlobFloatArray( String name );
+	
+	private native String[] getGlobStringArray( String name );
+	
+	private native int     stackSize();
+	
+	private native int     getInt( int index );
+	
+	private native float   getFloat( int index );
+	
+	private native String  getString( int index );
+	
+	
+	private native void     pushInt( int index );
+	
+	private native void     pushFloat( int index );
+	
+	private native void     pushString( int index );	
+	
+	private native String  error();
+	
+	
+	public void  setParamCalled( ) {
+		System.out.print("setParamCalled");
+		String name  = getString(1);
+		System.out.print(name);
+		
+	}
+	
+	public static void main(String[] args) {
+		
+		tintaLua lua = new tintaLua();
+		lua.init();		
+		//String execute = new String("z = 100 + 1000 arr = { 100, 10 }");
+		
+		//lua.executeBuffer(execute, execute.length());
+		
+		lua.executeFile( "D:/test.lua" );
+		String err = lua.error();
+		int[] k = lua.getGlobIntArray("arr");	
+		err = lua.error();
+		int ki = lua.getGlobInteger("z");		
+		err = lua.error();
+		//System.out.print(ki);
+				
+		int t = 0;
+	}
+	
+	static {
+			System.loadLibrary("tintaLuaJava");
+	}
+}

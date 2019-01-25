@@ -1,0 +1,9 @@
+INDEX VERSION 1.127+D:\mya\Git\tinta-java\.metadata\.plugins\org.eclipse.jdt.core
+2694812966.index
+1075874757.index
+71018339.index
+3260877587.index
+3778645487.index
+1079038258.index
+1974298778.index
+1922872251.index

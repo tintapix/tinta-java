@@ -1,0 +1,28 @@
+package Molygon;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Shell;
+
+public class molyConsole extends Composite {
+	
+	
+	public void initUI() {
+    	
+	      // Buttons
+	      /*  Button button1 = new Button(mainFrame, SWT.PUSH);
+	        button1.setText("Button");
+	        button1.setBounds(20, 50, 80, 30);
+
+	        Button button2 = new Button(mainFrame, SWT.PUSH);
+	        button2.setText("Button");
+	        button2.setSize(80, 30);
+	        button2.setLocation(50, 100);
+	      */
+	    	
+	    	
+	    }
+
+}

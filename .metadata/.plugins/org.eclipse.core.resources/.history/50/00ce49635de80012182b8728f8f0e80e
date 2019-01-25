@@ -1,0 +1,152 @@
+package Molygon;
+
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+
+
+public class PasswDialog extends JDialog implements KeyListener {
+ 
+	public enum action {TO_ENCODE, TO_DECODE, DO_NOTHING}; 
+		
+	
+	public PasswDialog(){
+		mAction = action.DO_NOTHING;
+	}
+	private static final long serialVersionUID = -832548326686122133L;
+	
+	static final String mAppName = "Ввод ключа";
+	
+	static JFrame aWindow = new JFrame(mAppName);
+	static JPasswordField   mPasswText;
+	static JButton mBtnOk;
+    static JButton mBtnCancel;
+    static String  mText;
+    static action  mAction;
+    
+    void HandleOk(){
+    	if(mPasswText.getPassword().length > 0){
+    		
+	    	Aes256Application.setPasswText(mPasswText.getPassword());
+	    	switch(mAction){
+	    	
+	    	case TO_ENCODE:
+	    		Aes256Application.SaveData();
+	    		break;
+	    	case TO_DECODE:
+	    		Aes256Application.GetData();
+	    		break;
+	    	case DO_NOTHING:
+	    		break;  		
+	    		
+	    	}
+	    	PasswDialog.mPasswText.setText("");
+	    	PasswDialog.this.dispose();		    	
+    	}    	
+    }
+    
+class MouseBtnOkHandler extends MouseAdapter {
+	    
+	    public void mouseClicked(MouseEvent ev) {	
+	    	HandleOk();	    	
+	    }
+	    
+	}
+
+
+class MouseBtnCancelHandler extends MouseAdapter {
+    
+    public void mouseClicked(MouseEvent ev) {
+    	PasswDialog.mPasswText.setText("");
+    	PasswDialog.this.dispose();
+    }
+    
+}
+
+
+
+
+public void keyTyped(KeyEvent e) {	       
+
+}
+	 
+public void keyPressed(KeyEvent e) {
+
+	if ( e.getKeyCode() == KeyEvent.VK_ENTER ) {		
+		HandleOk();
+	}
+	else if( e.getKeyCode() == KeyEvent.VK_ESCAPE ){
+		PasswDialog.mPasswText.setText("");
+    	PasswDialog.this.dispose();
+	}
+
+}
+public void keyReleased(KeyEvent e) {    
+	
+}
+
+protected void dialogInit(){
+	
+		mPasswText = new JPasswordField ("", 32);
+		/*TODO ограничить ввоб до 32 символов*/
+    
+		mBtnOk = new JButton("Ok");
+		mBtnCancel = new JButton("Cancel");	
+		super.dialogInit();	 
+		
+		//addKeyListener(this);
+	 
+		GridBagLayout gridbag = new GridBagLayout();
+	    GridBagConstraints c = new GridBagConstraints();
+	    c.insets.top = 3;
+	    c.insets.bottom = 3;
+	    JPanel pane = new JPanel(gridbag);
+	    pane.setBorder(BorderFactory.createEmptyBorder(10, 20, 5, 20));
+	    c.anchor = GridBagConstraints.EAST;
+	    
+
+	   
+	    c.gridy = 1;
+	    gridbag.setConstraints(mPasswText, c);
+	    //mPasswText.addActionListener(actionListener);
+	    //mPasswText.addKeyListener(keyListener);
+	    pane.add(mPasswText);
+
+	    c.gridy = 2;
+	    c.gridwidth = GridBagConstraints.REMAINDER;
+	    c.anchor = GridBagConstraints.CENTER;
+	    
+	    JPanel panel = new JPanel();
+	    mBtnOk.addMouseListener(new MouseBtnOkHandler());
+	   // mBtnOk.addKeyListener(new KeybordBtnOkHandler());
+	    //okButton.addKeyListener(keyListener);
+	    panel.add(mBtnOk);
+	    mBtnCancel.addMouseListener(new MouseBtnCancelHandler());
+	    //this.addKeyListener(new KeybordBtnCancelHandler());
+	    
+	    panel.add(mBtnCancel);
+	    gridbag.setConstraints(panel, c);
+	    pane.add(panel);
+
+	    getContentPane().add(pane);
+	    pack();
+	
+	
+	
+}
+public void showDialog(Point p, action toDo){
+	  mAction = toDo;
+      setLocation(p.x , p.y );
+    
+    
+    setVisible(true);    
+ }
+
+
+
+	
+} // PasswDialog

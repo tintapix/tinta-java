@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;MolyCommon/src/com/molygon&apos; to &apos;tinta&apos;" description="Rename resource &apos;molygon&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/com/molygon" name="tinta" stamp="1479120465864" updateReferences="true"/>
+</session>

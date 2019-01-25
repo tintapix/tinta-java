@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;MolyCommon/src/com/tinta/common/config&apos; to &apos;tintatree&apos;" description="Rename resource &apos;config&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/com/tinta/common/config" name="tintatree" stamp="1486736445071" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;MolyCommon/src/com/tinta/common/tintatree&apos; to &apos;tintatreeconfig&apos;" description="Rename resource &apos;tintatree&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/com/tinta/common/tintatree" name="tintatreeconfig" stamp="1486736534328" updateReferences="true"/>
+</session>

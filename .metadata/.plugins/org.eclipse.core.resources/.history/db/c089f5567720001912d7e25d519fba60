@@ -1,0 +1,32 @@
+/**
+ * Copyright (C) 2011 - 2019 Mikhail Evdokimov 
+ * tintapix.com
+ * molygon@gmail.com
+ */
+
+package com.tinta.common;
+
+
+/*
+ * Singleton debug class
+ */
+public class tintaDebug {
+	
+	private tintaDebug(){}
+	
+	public static molyILogger getLogger(){
+		if( mLog != null )			 
+			return mLog;
+		
+		// basic logger
+		mLog = new tintaOutLog();
+		
+		return mLog;
+	}
+	
+	public static void setLogger( molyILogger log ){		
+		mLog = log;
+	}
+	
+	public static molyILogger mLog = null;	
+}

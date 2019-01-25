@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;Tinta/src/com/tinta/windows/swt/molySWTWindow.java&apos; to &apos;tintaSWTWindow.java&apos;" description="Rename resource &apos;molySWTWindow.java&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/com/tinta/windows/swt/molySWTWindow.java" name="tintaSWTWindow.java" stamp="1544082293724" updateReferences="true"/>
+</session>

@@ -1,0 +1,158 @@
+/**
+ * Copyright (C) 2011 - 2017 Evdokimov Mikhail
+ * tintapix.com
+ * molygon@gmail.com
+ */
+
+package com.tinta.windows.swt;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
+
+import com.tinta.common.*;
+import com.tinta.common.tintatreeconfig.molyTreeConfig;
+import com.tinta.windows.molyPosition;
+
+public class tintaConsoleSWT extends molySWTWindow implements molyILogger{
+
+	protected static final  int mWinWidth = 600;
+	protected static final int mWinHeight = 600;
+	//protected Shell mShell = null;
+	protected Button execute = null; // new Button( mShell, SWT.NONE );
+	protected Button clear = null; // new Button( mShell, SWT.NONE );
+	protected List consoleOut = null; // new Text(mShell, SWT.SINGLE |
+										// SWT.BORDER);
+	protected Text consoleIn = null; // new Text(mShell, SWT.SINGLE |
+										// SWT.BORDER); 
+	protected tintaGridPack packControls = new tintaGridPack(mWinWidth,
+			mWinHeight, 5, 9);
+	protected boolean infoMode = false;
+		
+
+	protected void onResize() {
+		tintaControlPos pos = packControls.getPosition(0);
+		consoleOut.setSize((int) pos.mSize.mx, (int) pos.mSize.my);
+		consoleOut.setLocation((int) pos.mPosition.mx, (int) pos.mPosition.my);
+		pos = packControls.getPosition(1);
+		consoleIn.setSize((int) pos.mSize.mx, (int) pos.mSize.my);
+		consoleIn.setLocation((int) pos.mPosition.mx, (int) pos.mPosition.my);
+		pos = packControls.getPosition(2);
+		execute.setSize((int) pos.mSize.mx, (int) pos.mSize.my);
+		execute.setLocation((int) pos.mPosition.mx, (int) pos.mPosition.my);
+		pos = packControls.getPosition(3);
+		clear.setSize((int) pos.mSize.mx, (int) pos.mSize.my);
+		clear.setLocation((int) pos.mPosition.mx, (int) pos.mPosition.my);
+	}
+
+	public void onExecute() {
+
+	}
+
+	public tintaConsoleSWT() {		
+	}
+
+	public tintaConsoleSWT( Shell shell, boolean infoMode ) {
+		
+		super( "Console", new molyPosition(300,300), new molyPosition(mWinWidth,mWinHeight), shell, -1 );		
+		
+		//molyTreeConfig mConf = new molyTreeConfig( path, true );
+		
+		this.infoMode = infoMode;
+
+		execute = new Button(getShell(), SWT.NONE);
+		
+		setFontSize(execute,12);
+		
+	    
+	    
+		consoleOut = new List(getShell(), SWT.MULTI | SWT.BORDER | SWT.H_SCROLL
+				| SWT.V_SCROLL);
+
+		clear = new Button(getShell(), SWT.NONE);
+		clear.addListener(SWT.Modify, new Listener() {
+			public void handleEvent(Event e) {
+				consoleOut.removeAll();
+			}
+		});
+
+		consoleIn = new Text(getShell(), SWT.SINGLE | SWT.BORDER);
+		consoleOut.addListener(SWT.Modify, new Listener() {
+			public void handleEvent(Event e) {
+				// after added
+			}
+		});		
+
+		setFontSize(consoleIn,12);
+		// lines 8
+		// columns 3
+		// info console
+		packControls.add(0, 0, 5, 8);
+		// text edit execute
+		packControls.add(0, 8, 4, 1);
+		// button execute
+		packControls.add(3, 8, 1, 1);
+		// button clear
+		packControls.add(4, 8, 1, 1);
+
+		execute.setText("Execute");
+		clear.setText("Clear");
+		
+		setFontSize(clear,12);
+
+		onResize();
+
+		getShell().addListener(SWT.Resize, new Listener() {
+			@Override
+			public void handleEvent(Event event) {
+				int w = getShell().getClientArea().width;
+				int h = getShell().getClientArea().height;				
+			
+				packControls.setSize( w, h );				
+				onResize();
+			}
+		});
+
+		execute.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				onExecute();
+			}
+		});
+
+		if (infoMode) {
+			consoleIn.setEnabled(false);
+			execute.setEnabled(false);
+		}
+		
+		getShell().pack();
+		getShell().open();
+	}
+
+	public tintaConsoleSWT(Shell shell) {
+		this(shell, false);
+	}
+
+	public void logMsg(String msg, molyMsgLevel level) {
+		StringBuffer buf = new StringBuffer();
+		buf.append( tintaOutLog.createPrefix( level, true ) );
+		buf.append(msg);
+		consoleOut.add(buf.toString(), 0);
+	}
+
+	public void logMsg(String msg) {
+		this.logMsg(msg, molyILogger.molyMsgLevel.MSG_INFO);
+	}
+	
+	//public setPosition();
+	
+	
+}

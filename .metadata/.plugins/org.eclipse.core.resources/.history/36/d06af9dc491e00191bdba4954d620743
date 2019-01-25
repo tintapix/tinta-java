@@ -1,0 +1,58 @@
+package com.tinta.tintaLuaApp;
+
+import com.tinta.common.lua.tintaLua;
+
+
+
+public class tintaLuaThread implements Runnable {
+		
+	private tintaLua mLua;
+	private tintaLuaConsole.ScriptData mScript;
+	private boolean mIsFile;
+	private tintaIExecuted mFinishCallback = null;
+	
+	public tintaLuaThread() {
+		
+	}
+	public void setParams( tintaLua lua, tintaLuaConsole.ScriptData script, boolean isFile, tintaIExecuted onFinish){
+		mLua = lua;
+		mScript = script;
+		mIsFile = isFile;
+		mFinishCallback = onFinish;
+	}
+	
+	public tintaLuaThread( tintaLua lua, tintaLuaConsole.ScriptData script, boolean isFile, tintaIExecuted onFinish ) {
+		mLua = lua;
+		mScript = script;
+		mIsFile = isFile;	
+		mFinishCallback = onFinish; 
+	}
+	
+	
+	public void run() {
+		if( mLua != null && mScript.mBuffer.length() > 0 ){
+					
+			if( mScript.mData != null ){
+				
+				mLua.bindData(mScript.mData);
+			}
+			
+			if( mIsFile ) {
+				System.out.print("lua.executeFile");
+				mLua.executeFile( mScript.mBuffer );
+			}
+			else
+				mLua.executeBuffer( mScript.mBuffer );
+    	
+			if( mScript.mData != null ){						
+				mLua.bindData(null);				
+			}
+
+			if( mFinishCallback != null )
+				mFinishCallback.onFinish();
+				
+			
+			//System.out.print("after run()");
+		}
+    }
+}

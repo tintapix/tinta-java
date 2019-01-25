@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;MolyCommon/src/com/molygon/common/config/molyConfigTreeNode.java&apos; to &apos;molyConfigToken.java&apos;" description="Rename resource &apos;molyConfigTreeNode.java&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/com/molygon/common/config/molyConfigTreeNode.java" name="molyConfigToken.java" stamp="1459502507808" updateReferences="true"/>
+</session>

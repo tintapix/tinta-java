@@ -1,0 +1,123 @@
+/**
+ * Copyright (C) 2011 - 2019 Mikhail Evdokimov 
+ * tintapix.com
+ * tintapix@gmail.com
+ */
+
+package com.tinta.crypto;
+
+public class tintaCrypto {
+	
+	private native boolean aes256Init(byte[] arr);
+	private native byte[] aes256Encrypt(byte[] arr);	
+	private native byte[] aes256Decrypt(byte[] arr);
+	private native void aes256Release();	
+	private static boolean mInited = false;
+	public static short mKeyLength = 32;
+	
+	
+	
+	public static CryptAes256 mCrypter = new CryptAes256();
+	
+	public static void InitCrypto(char[] word){	
+		
+		byte[] bytes = null; 
+		try{
+			bytes = new String(word).getBytes("US-ASCII");
+		}
+		catch(Exception e){			
+		}
+						
+		if( bytes == null || bytes.length == 0  || bytes.length > mKeyLength){
+			mInited = false;
+			return;
+		}							
+		
+		int [] arrInt = CryptAes256.convertToInt(bytes); //ByteBuffer.wrap(bytes).asIntBuffer().array();
+
+		mInited = mCrypter.Aes256Init(arrInt);	
+	}
+	
+	public static int getAllignedSize( int size ){
+		
+		return mCrypter.GetAllingedDataSize( size );
+		
+	}
+	public static byte[] EncryptData(byte[] data){
+		if( mInited == false )
+			return null;
+		
+			
+		int dataSizeNew = mCrypter.GetAllingedDataSize(data.length);
+		int [] arrInt = new int[dataSizeNew];
+		
+		CryptAes256.ToUnsignedChar( data, arrInt, data.length );
+				
+		int [] arrIntDecr = new int[dataSizeNew];
+		mCrypter.Aes256EncryptData(arrInt, arrIntDecr, dataSizeNew);
+		byte[] dataDecr = new byte[dataSizeNew];
+		CryptAes256.toSignedChar(arrIntDecr, dataDecr, dataSizeNew);
+		return dataDecr;
+		
+		
+	}
+	
+	public static byte[] DencryptData(byte[] data){
+		
+		if( mInited == false )
+			return null;
+		
+		if (data.length == 0)
+			return null;
+		
+		//return mCrypt.aes256Decrypt(data);
+		
+		int [] arrInt = new int[data.length];		
+		
+		CryptAes256.ToUnsignedChar( data, arrInt, data.length );		
+		
+		int [] arrIntDecr = new int[arrInt.length];
+		mCrypter.Aes256DecryptData(arrInt, arrIntDecr, arrInt.length);
+		byte[] dataDecr = new byte[arrInt.length];
+		CryptAes256.toSignedChar(arrIntDecr, dataDecr, dataDecr.length);
+		return dataDecr;
+	}
+	
+	public static void ReleaseCrypto(){
+		/*if(mInited == true){
+			mCrypt.aes256Release();
+		}
+		*/
+			
+		
+	}
+	//static { System.loadLibrary("molyAes256"); }	
+	/*public static void main(String[] args) {
+		
+		tintaCrypto p = new tintaCrypto();
+		byte arr[] = new byte[32];
+		for (int i = 0; i < 32; i++) {
+			arr[i] = 1;
+		}
+		p.aes256Init(arr);
+		byte[] arrIn = {12,11,33,14,12,88,99,64,22,11,23,45,67,42,34,56, 
+						78,90,12,11,13,45,64,44,1 ,5 ,8 ,102,111,41,16,123, 100 };
+		
+		
+		byte[] arrOut =  p.aes256Encrypt(arrIn);
+		//System.out.println(arrOut.length);
+		
+		System.out.println( "����������� :"   + Arrays.toString( arrOut ) );
+		
+		//p.aes256Init(arr);
+		byte[] arrDecifOut = p.aes256Decrypt(arrOut);
+		System.out.println( "������������� :" + Arrays.toString( arrDecifOut ) );
+		//System.out.println("sum = " + sum);	
+		
+		p.aes256Release();
+	
+	}*/
+	
+	
+
+}

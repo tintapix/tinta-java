@@ -1,0 +1,6 @@
+package Molygon;
+
+public class molySingleton < T >{
+	private static TString instance = new T(); 
+
+}
