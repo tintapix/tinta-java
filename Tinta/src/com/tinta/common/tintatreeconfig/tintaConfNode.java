@@ -14,7 +14,7 @@ import com.tinta.common.tintaBufferIO;
 /**
  * Class describes node in the tree
  */
-public class molyConfNode {
+public class tintaConfNode {
 
 	public enum TokenType {
 		enNoType, enNumber, enString, enBoolean,
@@ -23,17 +23,17 @@ public class molyConfNode {
 		enNode // node with nested nodes or values
 	};
 
-	public molyConfNode() {
+	public tintaConfNode() {
 		mDataType = TokenType.enNoType;
 		mbValid = false;
 		// bMapMode = false;
 		mlevel = -1;
 		mBuffValue = new tintaBufferIO();
-		chNodesIndices = new ArrayList<molyConfNode>();
+		chNodesIndices = new ArrayList<tintaConfNode>();
 		mParent = null;
 	}
 
-	public molyConfNode(molyConfNode parent, molyConfigToken tok) {
+	public tintaConfNode(tintaConfNode parent, tintaConfigToken tok) {
 		mParent = parent;
 		mDataType = tok.mType;
 		mbValid = false;
@@ -45,12 +45,12 @@ public class molyConfNode {
 		else
 			mlevel = 0;
 		mBuffValue = new tintaBufferIO();
-		chNodesIndices = new ArrayList<molyConfNode>();
+		chNodesIndices = new ArrayList<tintaConfNode>();
 
 		initData(tok);
 	}
 
-	public boolean initData(molyConfigToken tok) {
+	public boolean initData(tintaConfigToken tok) {
 
 		mName = tok.mName;
 		mDataType = tok.mType;
@@ -113,7 +113,7 @@ public class molyConfNode {
 		return mbValid;
 	}
 
-	void addChild(molyConfNode chld) {
+	void addChild(tintaConfNode chld) {
 
 		chNodesIndices.add(chld);
 	}
@@ -124,7 +124,7 @@ public class molyConfNode {
 	}
 
 	// returns child on this level by index
-	public molyConfNode getChild(int index) {
+	public tintaConfNode getChild(int index) {
 		if (index >= chNodesIndices.size())
 			return null;
 
@@ -135,9 +135,9 @@ public class molyConfNode {
 		chNodesIndices.clear();
 	}
 
-	public void delChild(int index) throws molyConfigException {
+	public void delChild(int index) throws tintaConfigException {
 		if (index >= chNodesIndices.size() || index < 0)
-			throw new molyConfigException("Wrong index");
+			throw new tintaConfigException("Wrong index");
 
 		chNodesIndices.remove(index);
 	}
@@ -145,7 +145,7 @@ public class molyConfNode {
 	public void delChild(String name) {
 
 		int pos = 0;
-		for (molyConfNode v : chNodesIndices) {
+		for (tintaConfNode v : chNodesIndices) {
 			if (v.mName.equals(name)) {
 				chNodesIndices.remove(pos);
 				break;
@@ -154,10 +154,10 @@ public class molyConfNode {
 		}
 	}
 
-	public void delChild(molyConfNode node) {
+	public void delChild(tintaConfNode node) {
 
 		int pos = 0;
-		for (molyConfNode v : chNodesIndices) {
+		for (tintaConfNode v : chNodesIndices) {
 			if (v == node) {
 				chNodesIndices.remove(pos);
 				break;
@@ -167,8 +167,8 @@ public class molyConfNode {
 	}
 
 	// returns child on this level by name
-	public molyConfNode getChild(String name) {
-		molyConfNode r = getByName(name);
+	public tintaConfNode getChild(String name) {
+		tintaConfNode r = getByName(name);
 		return r;
 	}
 
@@ -208,8 +208,8 @@ public class molyConfNode {
 
 		String valStr = new Double(val).toString();
 
-		molyConfigToken tok = new molyConfigToken(mlevel, mDataType, mName,
-				valStr, 0, "");
+		tintaConfigToken tok = new tintaConfigToken(mlevel, mDataType, mName,
+				valStr, 0, new String());
 		return initData(tok);
 	}
 
@@ -217,8 +217,8 @@ public class molyConfNode {
 		if (mDataType != TokenType.enString)
 			return false;
 
-		molyConfigToken tok = new molyConfigToken(mlevel, mDataType, mName,
-				val, 0, "");
+		tintaConfigToken tok = new tintaConfigToken(mlevel, mDataType, mName,
+				val, 0, new String());
 		return initData(tok);
 	}
 
@@ -228,8 +228,8 @@ public class molyConfNode {
 		String valStr = "false";
 		if (val)
 			valStr = "true";
-		molyConfigToken tok = new molyConfigToken(mlevel, mDataType, mName,
-				valStr, 0, "");
+		tintaConfigToken tok = new tintaConfigToken(mlevel, mDataType, mName,
+				valStr, 0, new String());
 		return initData(tok);
 	}
 
@@ -242,7 +242,7 @@ public class molyConfNode {
 		return mBuffValue.GetSize();
 	}
 
-	public molyConfNode getParent() {
+	public tintaConfNode getParent() {
 		return mParent;
 	}
 
@@ -267,7 +267,7 @@ public class molyConfNode {
 	}
 
 	// root has null
-	protected molyConfNode mParent;
+	protected tintaConfNode mParent = null;
 
 	protected TokenType mDataType;
 
@@ -275,9 +275,9 @@ public class molyConfNode {
 
 	protected int mlevel;
 
-	protected String mName = "";
+	protected String mName = new String();
 
-	protected String mComment = "";
+	protected String mComment = new String();
 
 	public final tintaBufferIO getBuffer() {
 		return mBuffValue;
@@ -286,20 +286,20 @@ public class molyConfNode {
 	protected tintaBufferIO mBuffValue;
 
 	// keeping by index
-	public final ArrayList<molyConfNode> getIndices() {
+	public final ArrayList<tintaConfNode> getIndices() {
 		return chNodesIndices;
 	}
 
-	private ArrayList<molyConfNode> chNodesIndices;
+	private ArrayList<tintaConfNode> chNodesIndices;
 	// by name if it exists
-	// molyConfNodesmap_t chNodesNames;
+	// tintaConfNodesmap_t chNodesNames;
 
-	public String mNameValue = "";
+	public String mNameValue = new String();
 
-	private final molyConfNode getByName(String name) {
-		molyConfNode r = null;
+	private final tintaConfNode getByName(String name) {
+		tintaConfNode r = null;
 
-		for (molyConfNode v : chNodesIndices) {
+		for (tintaConfNode v : chNodesIndices) {
 			if (v.mName.equals(name))
 				return v;
 

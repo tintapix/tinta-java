@@ -9,8 +9,8 @@ package com.tinta.common.tintatreeconfig;
 import com.tinta.common.tintaDebug;
 import com.tinta.common.tintaILogger;
 
-public class molyConfigException extends Exception {
-	public molyConfigException(String text){
+public class tintaConfigException extends Exception {
+	public tintaConfigException(String text){
 		super( text );
 		if( tintaDebug.getLogger()!= null )
 			tintaDebug.getLogger().logMsg(text,tintaILogger.molyMsgLevel.MSG_EXCEPTION);

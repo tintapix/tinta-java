@@ -12,10 +12,10 @@ import java.util.StringTokenizer;
 import com.tinta.build.tintaBuild;
 import com.tinta.common.tintaUtilSystem;
 import com.tinta.common.tintaUtilSystem.EncodTypes;
-import com.tinta.common.tintatreeconfig.molyConfNode.TokenType;
+import com.tinta.common.tintatreeconfig.tintaConfNode.TokenType;
 
 
-public class molyTreeConfig {
+public class tintaTreeConfig {
 
 	private class RequestPair {
 		protected RequestPair(int pos_, String name_) {
@@ -31,7 +31,7 @@ public class molyTreeConfig {
 		int pos = -1;
 	}
 
-	public molyTreeConfig( String path, boolean saveComments ) {
+	public tintaTreeConfig( String path, boolean saveComments ) {
 
 		if (path.length() > 0)
 			mPath = path;
@@ -40,34 +40,34 @@ public class molyTreeConfig {
 
 		mBuffer = new ArrayList<String>();
 
-		tokens = new ArrayList<molyConfigToken>();
+		tokens = new ArrayList<tintaConfigToken>();
 
 		tokensDebug = new ArrayList<String>();
 
-		mRootNode = new molyConfNode();
+		mRootNode = new tintaConfNode();
 
 		bSaveComments = saveComments;
 	}
 
-	public molyTreeConfig() {
-		this("", true);
+	public tintaTreeConfig() {
+		this(new String(), true);
 	}
 
-	public boolean nodeExists(String request) throws molyConfigException {
+	public boolean nodeExists(String request) throws tintaConfigException {
 
 		ArrayList<RequestPair> requests = fillReqests(request);
 
 		if (requests.size() == 0 || requests.get(requests.size() - 1).pos == -2) {
-			throw new molyConfigException(
+			throw new tintaConfigException(
 					"Wrong request format. \"*\" not allowed");
 		}
 		LastPosition last = new LastPosition();
-		molyConfNode rezNode = findNode(requests, mRootNode, last);
+		tintaConfNode rezNode = findNode(requests, mRootNode, last);
 		return rezNode != null;
 
 	}
 
-	public void parse(String path) throws molyConfigException {
+	public void parse(String path) throws tintaConfigException {
 
 		boolean r = true;
 		if (path.length() > 0) {
@@ -76,15 +76,15 @@ public class molyTreeConfig {
 		}
 		if (mPath.length() == 0) {
 
-			throw new molyConfigException("Exception. Wrong path to parse");
+			throw new tintaConfigException("Exception. Wrong path to parse");
 		}
 
 		tokens.clear();
 		tokensDebug.clear();
 		mErrorStack.clear();
 		mBuffer.clear();
-		mRootNode = new molyConfNode(null, new molyConfigToken(0,
-				molyConfNode.TokenType.enNode, "", "", 0,	""));
+		mRootNode = new tintaConfNode(null, new tintaConfigToken(0,
+				tintaConfNode.TokenType.enNode, new String(), new String(), 0,	new String()));
 
 		// parsing
 		// first pass: removing all spaces, removing all comments, testing for
@@ -197,8 +197,8 @@ public class molyTreeConfig {
 									// trying add new name token but old value is empty(
 									// no delimiter found: ',' '{' '}' )
 									if (tokens.size() > 0
-											&& tokens.get(tokens.size() - 1).mValue == ""
-											&& tokens.get(tokens.size() - 1).mType != molyConfNode.TokenType.enNode) {
+											&& tokens.get(tokens.size() - 1).mValue.equals("")
+											&& tokens.get(tokens.size() - 1).mType != tintaConfNode.TokenType.enNode) {
 										r = false;
 										// Molygon::StringUtil::StrStreamType msg;
 										// msg << _M("Wrong value token before token ");
@@ -227,10 +227,10 @@ public class molyTreeConfig {
 									}
 									// saving name token
 									// savedComment
-									tokens.add(new molyConfigToken(level,
-											molyConfNode.TokenType.enNoType, curToken
-													.toString(), "", 0,
-													""));
+									tokens.add(new tintaConfigToken(level,
+											tintaConfNode.TokenType.enNoType, curToken
+													.toString(), new String(), 0,
+													new String()));
 		
 									// setComment(tokens.get(tokens.size() - 1 ));
 									lastSpecSymbol = lineText.charAt(iPosCur);
@@ -254,7 +254,7 @@ public class molyTreeConfig {
 									}
 		
 									// before '}' we must have value token
-									molyConfNode.TokenType type = molyConfNode.TokenType.enNoType;
+									tintaConfNode.TokenType type = tintaConfNode.TokenType.enNoType;
 									type = validateValue(curToken.toString());
 		
 									if (curToken.length() != 0) { // allow empty tokens
@@ -265,7 +265,7 @@ public class molyTreeConfig {
 										boolean found = permited
 												.contains(lastSpecSymbol);
 		
-										if (type == molyConfNode.TokenType.enNoType
+										if (type == tintaConfNode.TokenType.enNoType
 												&& !found) {
 											r = false;
 											// Molygon::StringUtil::StrStreamType msg;
@@ -323,10 +323,10 @@ public class molyTreeConfig {
 		
 									// saving name of the namespace if we have it
 									// 'namespace{'
-									tokens.add(new molyConfigToken(level,
-											molyConfNode.TokenType.enNode, curToken
-													.toString(), "", 0,
-													""));
+									tokens.add(new tintaConfigToken(level,
+											tintaConfNode.TokenType.enNode, curToken
+													.toString(), new String(), 0,
+													new String()));
 		
 									// setComment(tokens.get(tokens.size() - 1 ));
 									curToken = new StringBuffer();
@@ -411,13 +411,13 @@ public class molyTreeConfig {
 			permited.add('='); // allows such expressions: ',v1=100'
 
 			// before '}' we must have value token
-			molyConfNode.TokenType type = molyConfNode.TokenType.enNoType;
+			tintaConfNode.TokenType type = tintaConfNode.TokenType.enNoType;
 			type = validateValue(curToken.toString());
 
 			// charStack_t::const_iterator it = std::find(permited.begin(),
 			// permited.end(), lastSpecSymbol );
 			boolean found = permited.contains(lastSpecSymbol);
-			if (type == molyConfNode.TokenType.enNoType && !found) {
+			if (type == tintaConfNode.TokenType.enNoType && !found) {
 				r = false;
 				// Molygon::StringUtil::StrStreamType msg;
 				// msg << _M("Wrong value token before ");
@@ -455,10 +455,10 @@ public class molyTreeConfig {
 
 		if (r) {
 			// tokens_stack_t::const_iterator rit = tokens.begin();
-			molyConfNode curParentNode = mRootNode;
+			tintaConfNode curParentNode = mRootNode;
 			int curLenvel = 0;
 			// for( ;rit!= tokens.end() && r ; rit++){
-			for (molyConfigToken tok : tokens) {
+			for (tintaConfigToken tok : tokens) {
 
 				// Molygon::StringUtil::StrStreamType msg;
 				StringBuffer msg = new StringBuffer();
@@ -488,7 +488,7 @@ public class molyTreeConfig {
 					msg.append("Name: ");
 					msg.append(tok.mName);
 					msg.append(" Type: ");
-					molyConfNode.TokenType type = tok.mType;
+					tintaConfNode.TokenType type = tok.mType;
 					switch (type) {
 					case enNoType:
 						msg.append(" NoType ");
@@ -527,16 +527,16 @@ public class molyTreeConfig {
 				buff.append("\n");
 			}
 			mErrorStack.clear();
-			throw new molyConfigException(buff.toString());
+			throw new tintaConfigException(buff.toString());
 
 		}
 	}
 
-	public void parse() throws molyConfigException {
+	public void parse() throws tintaConfigException {
 		this.parse(mPath);
 	}
 
-	public ArrayList<String> fillLinesFromNodes(final molyConfNode dataNode,
+	public ArrayList<String> fillLinesFromNodes(final tintaConfNode dataNode,
 			boolean last) {
 
 		ArrayList<String> nodes = new ArrayList<String>();
@@ -551,7 +551,7 @@ public class molyTreeConfig {
 		} else {
 
 			if (dataNode.mParent != null) { // ignore for root
-				nodes.add(createSaveLine(dataNode, ""));
+				nodes.add(createSaveLine(dataNode, new String()));
 
 				// Molygon::StringUtil::StrStreamType rez;
 				StringBuffer buff = new StringBuffer();
@@ -587,17 +587,17 @@ public class molyTreeConfig {
 		return mRootNode != null && mRootNode.childQuantity() > 0;
 	}
 
-	public boolean save() throws molyConfigException {
+	public boolean save() throws tintaConfigException {
 		return save(mPath);
 	}
 
-	public boolean save(String path) throws molyConfigException {
+	public boolean save(String path) throws tintaConfigException {
 
 		if (mRootNode == null) {
 			// StringStreamBasic msg;
 			String msg = "Exception. Empty data.";
 
-			throw new molyConfigException(msg);
+			throw new tintaConfigException(msg);
 		}
 
 		ArrayList<String> toSave = fillLinesFromNodes(mRootNode, false);
@@ -612,7 +612,7 @@ public class molyTreeConfig {
 			buff.append(path);
 			buff.append(" error.");
 
-			throw new molyConfigException(buff.toString());
+			throw new tintaConfigException(buff.toString());
 		}
 
 		return r;
@@ -636,7 +636,7 @@ public class molyTreeConfig {
 		// stream_out<<_M("!!!!!! mRootNode == NULL ");
 
 		LastPosition last = new LastPosition();
-		molyConfNode rezNode = findNode(requests, mRootNode, last);
+		tintaConfNode rezNode = findNode(requests, mRootNode, last);
 		if (rezNode != null)
 			return rezNode.childQuantity();
 
@@ -646,9 +646,9 @@ public class molyTreeConfig {
 	/*
 	 * Returns Child node by name
 	 */
-	public molyConfNode getChild(String request, molyConfNode from) {
+	public tintaConfNode getChild(String request, tintaConfNode from) {
 
-		molyConfNode parent = from != null ? from : mRootNode;
+		tintaConfNode parent = from != null ? from : mRootNode;
 
 		if (parent == null)
 			return null;
@@ -689,8 +689,8 @@ public class molyTreeConfig {
 	/*
 	 * Deletes node with all child nodes
 	 */
-	public void delNode(molyConfNode node) throws molyConfigException {
-		molyConfNode parent = node.getParent();
+	public void delNode(tintaConfNode node) throws tintaConfigException {
+		tintaConfNode parent = node.getParent();
 		if (parent != null) {
 			parent.delChild(node);
 		}
@@ -699,10 +699,10 @@ public class molyTreeConfig {
 	/*
 	 * Deletes all child nodes
 	 */
-	public void delChild(molyConfNode parent, int pos)
-			throws molyConfigException {
+	public void delChild(tintaConfNode parent, int pos)
+			throws tintaConfigException {
 		if (parent == null)
-			throw new molyConfigException("Parent node is null");
+			throw new tintaConfigException("Parent node is null");
 
 		parent.delChild(pos);
 	}
@@ -710,10 +710,10 @@ public class molyTreeConfig {
 	/*
 	 * Deletes all child nodes
 	 */
-	public void delChild(molyConfNode parent, String name)
-			throws molyConfigException {
+	public void delChild(tintaConfNode parent, String name)
+			throws tintaConfigException {
 		if (parent == null)
-			throw new molyConfigException("Parent node is null");
+			throw new tintaConfigException("Parent node is null");
 
 		parent.delChild(name);
 	}
@@ -721,10 +721,10 @@ public class molyTreeConfig {
 	/*
 	 * Deletes all child nodes
 	 */
-	public void delAllChild(molyConfNode parent) throws molyConfigException {
+	public void delAllChild(tintaConfNode parent) throws tintaConfigException {
 
 		if (parent == null)
-			throw new molyConfigException("Parent node is null");
+			throw new tintaConfigException("Parent node is null");
 
 		parent.delAllChild();
 	}
@@ -733,34 +733,34 @@ public class molyTreeConfig {
 	 * bForce - if true creates or replaces value of any type
 	 */
 	public boolean setValue(String request, boolean val, boolean bForce)
-			throws molyConfigException {
+			throws tintaConfigException {
 		ArrayList<RequestPair> requests = fillReqests(request);
 
 		if (requests.size() == 0) {
-			throw new molyConfigException("Wrong request format");
+			throw new tintaConfigException("Wrong request format");
 		}
 
 		LastPosition last = new LastPosition();
-		molyConfNode rezNode = findNode(requests, mRootNode, last);
+		tintaConfNode rezNode = findNode(requests, mRootNode, last);
 
 		if (rezNode != null) { // last node in request- value found
 			if (rezNode.mDataType != TokenType.enBoolean && !bForce)
-				throw new molyConfigException("Value is not a Boolean");
+				throw new tintaConfigException("Value is not a Boolean");
 			if (bForce)
 				rezNode.mDataType = TokenType.enBoolean;
 			return rezNode.setVal(val);
 		}
 		if (bForce) {
 
-			molyConfNode from = mRootNode;
-			molyConfNode before = from;
+			tintaConfNode from = mRootNode;
+			tintaConfNode before = from;
 			int level = -1;
 			for (RequestPair pair : requests) {
 				level++;
 				from = findNode(pair, from);
 				boolean lastReq = level == (requests.size() - 1);
 				if (from != null && !lastReq
-						&& from.mDataType != molyConfNode.TokenType.enNode) {
+						&& from.mDataType != tintaConfNode.TokenType.enNode) {
 					StringBuffer err = new StringBuffer();
 					err.append("Can`t add leaf to the leaf: ");
 					if (pair.name.length() != 0)
@@ -768,24 +768,24 @@ public class molyTreeConfig {
 					else
 						err.append(pair.pos);
 
-					throw new molyConfigException(err.toString());
+					throw new tintaConfigException(err.toString());
 				}
 
 				if (from == null) {
-					// int level, molyConfNode.TokenType type, String name,
+					// int level, tintaConfNode.TokenType type, String name,
 					// String val, int pos, String comment
-					molyConfNode.TokenType tokenType = molyConfNode.TokenType.enNode;
-					String value = "";
+					tintaConfNode.TokenType tokenType = tintaConfNode.TokenType.enNode;
+					String value = new String();
 					if (lastReq) { // last - leaf
-						tokenType = molyConfNode.TokenType.enBoolean;
+						tokenType = tintaConfNode.TokenType.enBoolean;
 						if (val == true)
 							value = "true";
 						else
 							value = "false";
 					}
-					molyConfigToken token = new molyConfigToken(level,
-							tokenType, pair.name, value, 0, "");
-					molyConfNode newNode = new molyConfNode(before, token);
+					tintaConfigToken token = new tintaConfigToken(level,
+							tokenType, pair.name, value, 0, new String());
+					tintaConfNode newNode = new tintaConfNode(before, token);
 					from = newNode;
 					before.addChild(newNode);
 				}
@@ -794,24 +794,24 @@ public class molyTreeConfig {
 			return true;
 		}
 		String msg = createError(request, requests, last);
-		throw new molyConfigException(msg.toString());
+		throw new tintaConfigException(msg.toString());
 
 	}
 
 	public boolean setValue(String request, String val, boolean bForce)
-			throws molyConfigException {
+			throws tintaConfigException {
 		ArrayList<RequestPair> requests = fillReqests(request);
 
 		if (requests.size() == 0) {
-			throw new molyConfigException("Wrong request format");
+			throw new tintaConfigException("Wrong request format");
 		}
 
 		LastPosition last = new LastPosition();
-		molyConfNode rezNode = findNode(requests, mRootNode, last);
+		tintaConfNode rezNode = findNode(requests, mRootNode, last);
 
 		if (rezNode != null) { // last node in request- value found
 			if (rezNode.mDataType != TokenType.enString && !bForce)
-				throw new molyConfigException("Value is not a String");
+				throw new tintaConfigException("Value is not a String");
 
 			if (bForce)
 				rezNode.mDataType = TokenType.enString;
@@ -824,15 +824,15 @@ public class molyTreeConfig {
 		}
 		if (bForce) {
 
-			molyConfNode from = mRootNode;
-			molyConfNode before = from;
+			tintaConfNode from = mRootNode;
+			tintaConfNode before = from;
 			int level = -1;
 			for (RequestPair pair : requests) {
 				level++;
 				from = findNode(pair, from);
 				boolean lastReq = level == (requests.size() - 1);
 				if (from != null && !lastReq
-						&& from.mDataType != molyConfNode.TokenType.enNode) {
+						&& from.mDataType != tintaConfNode.TokenType.enNode) {
 					StringBuffer err = new StringBuffer();
 					err.append("Can`t add leaf to the leaf: ");
 					if (pair.name.length() != 0)
@@ -840,23 +840,23 @@ public class molyTreeConfig {
 					else
 						err.append(pair.pos);
 
-					throw new molyConfigException(err.toString());
+					throw new tintaConfigException(err.toString());
 				}
 
 				if (from == null) {
-					molyConfNode.TokenType tokenType = molyConfNode.TokenType.enNode;
+					tintaConfNode.TokenType tokenType = tintaConfNode.TokenType.enNode;
 
 					StringBuffer value = new StringBuffer();
 					if (lastReq) { // last - leaf
-						tokenType = molyConfNode.TokenType.enString;
+						tokenType = tintaConfNode.TokenType.enString;
 						value.append("\"");
 						value.append(val);
 						value.append("\"");
 
 					}
-					molyConfigToken token = new molyConfigToken(level,
-							tokenType, pair.name, value.toString(), 0, "");
-					molyConfNode newNode = new molyConfNode(before, token);
+					tintaConfigToken token = new tintaConfigToken(level,
+							tokenType, pair.name, value.toString(), 0, new String());
+					tintaConfNode newNode = new tintaConfNode(before, token);
 					from = newNode;
 					before.addChild(newNode);
 				}
@@ -866,40 +866,40 @@ public class molyTreeConfig {
 		}
 
 		String msg = createError(request, requests, last);
-		throw new molyConfigException(msg.toString());
+		throw new tintaConfigException(msg.toString());
 
 	}
 
 	public boolean setValue(String request, double val, boolean bForce)
-			throws molyConfigException {
+			throws tintaConfigException {
 
 		ArrayList<RequestPair> requests = fillReqests(request);
 
 		if (requests.size() == 0) {
-			throw new molyConfigException("Wrong request format");
+			throw new tintaConfigException("Wrong request format");
 		}
 
 		LastPosition last = new LastPosition();
-		molyConfNode rezNode = findNode(requests, mRootNode, last);
+		tintaConfNode rezNode = findNode(requests, mRootNode, last);
 
 		if (rezNode != null) { // last node in request- value found
 			if (rezNode.mDataType != TokenType.enNumber && !bForce)
-				throw new molyConfigException("Value is not a Number");
+				throw new tintaConfigException("Value is not a Number");
 			if (bForce)
 				rezNode.mDataType = TokenType.enString;
 			return rezNode.setVal(val);
 		}
 		if (bForce) {
 
-			molyConfNode from = mRootNode;
-			molyConfNode before = from;
+			tintaConfNode from = mRootNode;
+			tintaConfNode before = from;
 			int level = -1;
 			for (RequestPair pair : requests) {
 				level++;
 				from = findNode(pair, from);
 				boolean lastReq = level == (requests.size() - 1);
 				if (from != null && !lastReq
-						&& from.mDataType != molyConfNode.TokenType.enNode) {
+						&& from.mDataType != tintaConfNode.TokenType.enNode) {
 					StringBuffer err = new StringBuffer();
 					err.append("Can`t add leaf to the leaf: ");
 					if (pair.name.length() != 0)
@@ -907,20 +907,20 @@ public class molyTreeConfig {
 					else
 						err.append(pair.pos);
 
-					throw new molyConfigException(err.toString());
+					throw new tintaConfigException(err.toString());
 				}
 
 				if (from == null) {
-					molyConfNode.TokenType tokenType = molyConfNode.TokenType.enNode;
+					tintaConfNode.TokenType tokenType = tintaConfNode.TokenType.enNode;
 
-					String value = "";
+					String value = new String();
 					if (lastReq) { // last - leaf
-						tokenType = molyConfNode.TokenType.enNumber;
+						tokenType = tintaConfNode.TokenType.enNumber;
 						value = Double.toString(val);
 					}
-					molyConfigToken token = new molyConfigToken(level,
-							tokenType, pair.name, value, 0, "");
-					molyConfNode newNode = new molyConfNode(before, token);
+					tintaConfigToken token = new tintaConfigToken(level,
+							tokenType, pair.name, value, 0, new String());
+					tintaConfNode newNode = new tintaConfNode(before, token);
 					from = newNode;
 					before.addChild(newNode);
 				}
@@ -929,72 +929,72 @@ public class molyTreeConfig {
 			return true;
 		}
 		String msg = createError(request, requests, last);
-		throw new molyConfigException(msg.toString());
+		throw new tintaConfigException(msg.toString());
 
 	}
 
-	public boolean getValBoolean(String request) throws molyConfigException {
+	public boolean getValBoolean(String request) throws tintaConfigException {
 		// requestChain requests;
 		ArrayList<RequestPair> requests = fillReqests(request);
 		if (requests.size() == 0) {
 			// throw ConfigError( "Wrong request format" );
-			throw new molyConfigException("Wrong request format");
+			throw new tintaConfigException("Wrong request format");
 		}
 		LastPosition last = new LastPosition();
-		molyConfNode rezNode = findNode(requests, mRootNode, last);
+		tintaConfNode rezNode = findNode(requests, mRootNode, last);
 		if (rezNode != null) { // last node in request- value found
 
 			if (rezNode.mDataType != TokenType.enBoolean)
-				throw new molyConfigException("Value is not a Boolean");
+				throw new tintaConfigException("Value is not a Boolean");
 
 			return rezNode.getValBoolean();
 		}
 
 		String msg = createError(request, requests, last);
-		throw new molyConfigException(msg.toString());
+		throw new tintaConfigException(msg.toString());
 	}
 
-	public String getValString(String request) throws molyConfigException {
+	public String getValString(String request) throws tintaConfigException {
 
 		ArrayList<RequestPair> requests = fillReqests(request);
 		if (requests.size() == 0) {
 
-			throw new molyConfigException("Wrong request format");
+			throw new tintaConfigException("Wrong request format");
 		}
 		LastPosition last = new LastPosition();
 
-		molyConfNode rezNode = findNode(requests, mRootNode, last);
+		tintaConfNode rezNode = findNode(requests, mRootNode, last);
 		if (rezNode != null) {
 
 			if (rezNode.mDataType != TokenType.enString)
-				throw new molyConfigException("Value is not a String");
+				throw new tintaConfigException("Value is not a String");
 
 			return rezNode.getValString();
 		}
 
 		String msg = createError(request, requests, last);
-		throw new molyConfigException(msg.toString());
+		throw new tintaConfigException(msg.toString());
 
 	}
 
-	public double getValDouble(String request) throws molyConfigException {
+	public double getValDouble(String request) throws tintaConfigException {
 
 		ArrayList<RequestPair> requests = fillReqests(request);
 		if (requests.size() == 0) {
 
-			throw new molyConfigException("Wrong request format");
+			throw new tintaConfigException("Wrong request format");
 		}
 		LastPosition last = new LastPosition();
-		molyConfNode rezNode = findNode(requests, mRootNode, last);
+		tintaConfNode rezNode = findNode(requests, mRootNode, last);
 		if (rezNode != null) {
 			if (rezNode.mDataType != TokenType.enNumber)
-				throw new molyConfigException("Value is not a Number");
+				throw new tintaConfigException("Value is not a Number");
 
 			return rezNode.getValDouble();
 		}
 
 		String msg = createError(request, requests, last);
-		throw new molyConfigException(msg.toString());
+		throw new tintaConfigException(msg.toString());
 
 	}
 
@@ -1002,21 +1002,21 @@ public class molyTreeConfig {
 	 * adds values to the end
 	 */
 	public void addValuesString(final ArrayList<String> vals,
-			molyConfNode parent) throws molyConfigException {
+			tintaConfNode parent) throws tintaConfigException {
 
 		if (parent == null)
-			throw new molyConfigException("Parent node is null");
+			throw new tintaConfigException("Parent node is null");
 
 		for (String v : vals) {
 			StringBuffer data = new StringBuffer();
 			data.append("\"");
 			data.append(v);
 			data.append("\"");
-			molyConfigToken token = new molyConfigToken(parent.mlevel + 1,
-					TokenType.enString, "", data.toString(), 0,
-					"");
+			tintaConfigToken token = new tintaConfigToken(parent.mlevel + 1,
+					TokenType.enString, new String(), data.toString(), 0,
+					new String());
 
-			molyConfNode newNode = new molyConfNode(parent, token);
+			tintaConfNode newNode = new tintaConfNode(parent, token);
 
 			parent.addChild(newNode);
 		}
@@ -1026,16 +1026,16 @@ public class molyTreeConfig {
 	 * adds values to the end
 	 */
 	public void addValuesDouble(final ArrayList<Double> vals,
-			molyConfNode parent) throws molyConfigException {
+			tintaConfNode parent) throws tintaConfigException {
 		if (parent == null)
-			throw new molyConfigException("Parent node is null");
+			throw new tintaConfigException("Parent node is null");
 
 		for (Double v : vals) {
 
-			molyConfigToken token = new molyConfigToken(parent.mlevel + 1,
-					TokenType.enNumber, "", v.toString(), 0,
-					"");
-			molyConfNode newNode = new molyConfNode(parent, token);
+			tintaConfigToken token = new tintaConfigToken(parent.mlevel + 1,
+					TokenType.enNumber, new String(), v.toString(), 0,
+					new String());
+			tintaConfNode newNode = new tintaConfNode(parent, token);
 
 			parent.addChild(newNode);
 		}
@@ -1045,28 +1045,28 @@ public class molyTreeConfig {
 	 * adds values to the end
 	 */
 	public void addValuesBoolean(final ArrayList<Boolean> vals,
-			molyConfNode parent) throws molyConfigException {
+			tintaConfNode parent) throws tintaConfigException {
 		if (parent == null)
-			throw new molyConfigException("Parent node is null");
+			throw new tintaConfigException("Parent node is null");
 
 		for (Boolean v : vals) {
 
-			molyConfigToken token = new molyConfigToken(parent.mlevel + 1,
-					TokenType.enBoolean, "", v.toString(), 0,
-					"");
-			molyConfNode newNode = new molyConfNode(parent, token);
+			tintaConfigToken token = new tintaConfigToken(parent.mlevel + 1,
+					TokenType.enBoolean, new String(), v.toString(), 0,
+					new String());
+			tintaConfNode newNode = new tintaConfNode(parent, token);
 
 			parent.addChild(newNode);
 		}
 	}
 
 	public ArrayList<Double> getValsDouble(String request)
-			throws molyConfigException {
+			throws tintaConfigException {
 		return getValsDouble(request, -1);
 	}
 
 	public ArrayList<Double> getValsDouble(String request, int maxVals)
-			throws molyConfigException {
+			throws tintaConfigException {
 
 		ArrayList<Double> rez = new ArrayList<Double>();
 
@@ -1075,18 +1075,18 @@ public class molyTreeConfig {
 		// -2 means '*' symbol in the request
 		if (requests.size() == 0 || requests.get(requests.size() - 1).pos != -2) {
 
-			throw new molyConfigException(
+			throw new tintaConfigException(
 					"Wrong request format: needs \"*\" in the end");
 		}
 
 		requests.remove(requests.size() - 1);
 
 		LastPosition last = new LastPosition();
-		molyConfNode rezNode = findNode(requests, mRootNode, last);
+		tintaConfNode rezNode = findNode(requests, mRootNode, last);
 		int count = 1;
 		if (rezNode != null) {
-			ArrayList<molyConfNode> ind = rezNode.getIndices();
-			for (molyConfNode nodes : ind) {
+			ArrayList<tintaConfNode> ind = rezNode.getIndices();
+			for (tintaConfNode nodes : ind) {
 
 				if (nodes != null) {
 					if (nodes.mDataType == TokenType.enNumber) {
@@ -1102,17 +1102,17 @@ public class molyTreeConfig {
 		}
 
 		String msg = createError(request, requests, last);
-		throw new molyConfigException(msg.toString());
+		throw new tintaConfigException(msg.toString());
 
 	}
 
 	public ArrayList<String> getValsString(String request)
-			throws molyConfigException {
+			throws tintaConfigException {
 		return getValsString(request, -1);
 	}
 
 	public ArrayList<String> getValsString(String request, int maxVals)
-			throws molyConfigException {
+			throws tintaConfigException {
 
 		ArrayList<String> rez = new ArrayList<String>();
 
@@ -1120,19 +1120,19 @@ public class molyTreeConfig {
 		// -2 means '*' symbol in the request
 		if (requests.size() == 0 || requests.get(requests.size() - 1).pos != -2) {
 
-			throw new molyConfigException(
+			throw new tintaConfigException(
 					"Wrong request format: needs \"*\" in the end");
 		}
 
 		requests.remove(requests.size() - 1);
 
 		LastPosition last = new LastPosition();
-		molyConfNode rezNode = findNode(requests, mRootNode, last);
+		tintaConfNode rezNode = findNode(requests, mRootNode, last);
 
 		if (rezNode != null) {
 			int count = 1;
-			ArrayList<molyConfNode> ind = rezNode.getIndices();
-			for (molyConfNode nodes : ind) {
+			ArrayList<tintaConfNode> ind = rezNode.getIndices();
+			for (tintaConfNode nodes : ind) {
 				if (nodes != null) {
 					if (nodes.mDataType == TokenType.enString) {
 						rez.add(nodes.getValString());
@@ -1147,17 +1147,17 @@ public class molyTreeConfig {
 		}
 
 		String msg = createError(request, requests, last);
-		throw new molyConfigException(msg.toString());
+		throw new tintaConfigException(msg.toString());
 
 	}
 
 	public ArrayList<Boolean> getValsBoolean(String request)
-			throws molyConfigException {
+			throws tintaConfigException {
 		return getValsBoolean(request, -1);
 	}
 
 	public ArrayList<Boolean> getValsBoolean(String request, int maxVals)
-			throws molyConfigException {
+			throws tintaConfigException {
 
 		ArrayList<Boolean> rez = new ArrayList<Boolean>();
 
@@ -1165,19 +1165,19 @@ public class molyTreeConfig {
 		// -2 means '*' symbol in the request
 		if (requests.size() == 0 || requests.get(requests.size() - 1).pos != -2) {
 
-			throw new molyConfigException(
+			throw new tintaConfigException(
 					"Wrong request format: needs \"*\" in the end");
 		}
 
 		requests.remove(requests.size() - 1);
 
 		LastPosition last = new LastPosition();
-		molyConfNode rezNode = findNode(requests, mRootNode, last);
+		tintaConfNode rezNode = findNode(requests, mRootNode, last);
 
 		if (rezNode != null) {
 			int count = 1;
-			ArrayList<molyConfNode> ind = rezNode.getIndices();
-			for (molyConfNode nodes : ind) {
+			ArrayList<tintaConfNode> ind = rezNode.getIndices();
+			for (tintaConfNode nodes : ind) {
 				if (nodes != null) {
 					if (nodes.mDataType != TokenType.enBoolean) {
 						rez.add(nodes.getValBoolean());
@@ -1192,15 +1192,15 @@ public class molyTreeConfig {
 		}
 
 		String msg = createError(request, requests, last);
-		throw new molyConfigException(msg.toString());
+		throw new tintaConfigException(msg.toString());
 
 	}
 
 	/*
 	 * Returns Child node by index
 	 */
-	public molyConfNode getChild(int index, molyConfNode from) {
-		molyConfNode parent = from != null ? from : mRootNode;
+	public tintaConfNode getChild(int index, tintaConfNode from) {
+		tintaConfNode parent = from != null ? from : mRootNode;
 		if (parent == null)
 			return null;
 
@@ -1210,17 +1210,17 @@ public class molyTreeConfig {
 	/*
 	 * Returns Child node by request
 	 */
-	public molyConfNode getNode(String request, LastPosition last)
-			throws molyConfigException {
+	public tintaConfNode getNode(String request, LastPosition last)
+			throws tintaConfigException {
 
 		// requestChain requests;
 		ArrayList<RequestPair> requests = fillReqests(request);
 		if (requests.size() == 0) {
 			// throw ConfigError( "Wrong request format" );
-			throw new molyConfigException("Wrong request format");
+			throw new tintaConfigException("Wrong request format");
 		}
 		// LastPosition lastPos = new LastPosition();
-		molyConfNode rezNode = findNode(requests, mRootNode, last);
+		tintaConfNode rezNode = findNode(requests, mRootNode, last);
 
 		return rezNode;
 	}
@@ -1228,7 +1228,7 @@ public class molyTreeConfig {
 	/*
 	 * Returns Child node by request
 	 */
-	public molyConfNode getNode(String request) throws molyConfigException {
+	public tintaConfNode getNode(String request) throws tintaConfigException {
 
 		LastPosition lastPos = new LastPosition();
 
@@ -1238,7 +1238,7 @@ public class molyTreeConfig {
 	/*
 	 * Returns child quantity by request
 	 */
-	public int childQuantity(String request) throws molyConfigException {
+	public int childQuantity(String request) throws tintaConfigException {
 		if (request.length() == 0 && mRootNode != null)
 			return mRootNode.childQuantity();
 		return childQuantity(getNode(request));
@@ -1247,15 +1247,15 @@ public class molyTreeConfig {
 	/*
 	 * Returns child quantity
 	 */
-	public int childQuantity(molyConfNode from) {
-		molyConfNode parent = from != null ? from : mRootNode;
+	public int childQuantity(tintaConfNode from) {
+		tintaConfNode parent = from != null ? from : mRootNode;
 		if (parent == null)
 			return 0;
 
 		return parent.childQuantity();
 	}
 
-	public molyConfNode getRoot() {
+	public tintaConfNode getRoot() {
 		return mRootNode;
 	}
 
@@ -1271,7 +1271,7 @@ public class molyTreeConfig {
 	
 	// private String mComment = "";
 
-	private boolean readFile(String path) throws molyConfigException {
+	private boolean readFile(String path) throws tintaConfigException {
 
 		boolean r = false;
 		if (path.length() > 0) {
@@ -1287,19 +1287,19 @@ public class molyTreeConfig {
 				buff.append("Exception. Reading file:");
 				buff.append(path);
 				buff.append(" error.");
-				throw new molyConfigException(buff.toString());
+				throw new tintaConfigException(buff.toString());
 			}
 		}
 		return r;
 
 	}
 
-	private molyConfNode findNode(ArrayList<RequestPair> requests,
-			molyConfNode from, LastPosition last) {
+	private tintaConfNode findNode(ArrayList<RequestPair> requests,
+			tintaConfNode from, LastPosition last) {
 		if (from == null)
 			return null;
 
-		molyConfNode rezNode = from;
+		tintaConfNode rezNode = from;
 		int pos = 0;
 		for (RequestPair req : requests) {
 
@@ -1318,10 +1318,10 @@ public class molyTreeConfig {
 		return rezNode;
 	}
 
-	private molyConfNode findNode(RequestPair requests, molyConfNode from) {
+	private tintaConfNode findNode(RequestPair requests, tintaConfNode from) {
 		if (from == null)
 			return null;
-		molyConfNode rezNode = from;
+		tintaConfNode rezNode = from;
 
 		if (requests.pos > enNoIndex) {
 			rezNode = rezNode.getChild(requests.pos);
@@ -1331,9 +1331,9 @@ public class molyTreeConfig {
 		return rezNode;
 	}
 
-	private String mPath = "";
+	private String mPath = new String();
 
-	private molyConfNode mRootNode = new molyConfNode();
+	private tintaConfNode mRootNode = new tintaConfNode();
 
 	tintaUtilSystem.EncodTypes mEncType = tintaUtilSystem.EncodTypes.NO_ENCODE;
 
@@ -1347,7 +1347,7 @@ public class molyTreeConfig {
 
 	private ArrayList<String> mBuffer = new ArrayList<String>();
 
-	private ArrayList<molyConfigToken> tokens = new ArrayList<molyConfigToken>();
+	private ArrayList<tintaConfigToken> tokens = new ArrayList<tintaConfigToken>();
 
 	private ArrayList<String> tokensDebug = new ArrayList<String>();
 
@@ -1375,18 +1375,18 @@ public class molyTreeConfig {
 	}
 
 	// returns new actual parent node
-	private molyConfNode addNode(molyConfNode curParentNode,
-			molyConfigToken token, int beforeLevel) {
+	private tintaConfNode addNode(tintaConfNode curParentNode,
+			tintaConfigToken token, int beforeLevel) {
 
 		if (curParentNode == null)
 			return null;
 
-		molyConfNode parent;
+		tintaConfNode parent;
 		// same level
 		if (beforeLevel == token.mlevel) {
 
 			parent = curParentNode;
-			molyConfNode newNode = new molyConfNode(parent, token);
+			tintaConfNode newNode = new tintaConfNode(parent, token);
 
 			if (!newNode.mbValid) {
 				newNode = null;
@@ -1396,7 +1396,7 @@ public class molyTreeConfig {
 		} else if (beforeLevel > token.mlevel) { // new node on lower level
 
 			int downTo = beforeLevel - token.mlevel;
-			molyConfNode downNode = curParentNode;
+			tintaConfNode downNode = curParentNode;
 			while (downTo > 0 && downNode != null) {
 				if (downNode != null)
 					downNode = downNode.mParent;
@@ -1411,7 +1411,7 @@ public class molyTreeConfig {
 
 			if (parent != null) {
 
-				molyConfNode newNode = new molyConfNode(parent, token);
+				tintaConfNode newNode = new tintaConfNode(parent, token);
 
 				if (!newNode.mbValid) {
 					newNode = null;
@@ -1427,7 +1427,7 @@ public class molyTreeConfig {
 			assert (token.mlevel + 1 >= 0);
 			int upto = token.mlevel - beforeLevel;
 
-			molyConfNode lastNode = curParentNode;
+			tintaConfNode lastNode = curParentNode;
 			while (upto > 0 && lastNode != null) {
 				int chlds = lastNode.childQuantity();
 				lastNode = lastNode.getChild(chlds - 1); // searching node
@@ -1435,7 +1435,7 @@ public class molyTreeConfig {
 			}
 
 			if (lastNode != null
-					&& lastNode.mDataType == molyConfNode.TokenType.enNode) { // last
+					&& lastNode.mDataType == tintaConfNode.TokenType.enNode) { // last
 																				// node
 																				// must
 																				// be
@@ -1444,7 +1444,7 @@ public class molyTreeConfig {
 																				// with
 																				// value
 				parent = lastNode;
-				molyConfNode newNode = new molyConfNode(parent, token);
+				tintaConfNode newNode = new tintaConfNode(parent, token);
 
 				if (!newNode.mbValid) {
 					newNode = null;
@@ -1480,7 +1480,7 @@ public class molyTreeConfig {
 			int l = tok.length();
 			// trying to find .* - all values on level
 			if (l == 1 && tok.charAt(0) == '*') {
-				rez.add(new RequestPair(enAllvalues, ""));
+				rez.add(new RequestPair(enAllvalues, new String()));
 				break; // TODO [*] for leafs only
 			}
 
@@ -1495,7 +1495,7 @@ public class molyTreeConfig {
 					// int iVal = std::stoi(req.substr(1, l - 2), &s);
 
 					int iVal = Integer.parseInt(tok.substring(1, l - 1));
-					rez.add(new RequestPair(iVal, ""));
+					rez.add(new RequestPair(iVal, new String()));
 				} catch (NumberFormatException e) {
 
 					break;
@@ -1513,38 +1513,38 @@ public class molyTreeConfig {
 	 * determine the type of the value : 100, 100.12, .1000, true, false,
 	 * "text here", returns enNoType if somth wrong
 	 */
-	private molyConfNode.TokenType validateValue(String val) {
+	private tintaConfNode.TokenType validateValue(String val) {
 
 		if (val.length() > 2 && val.charAt(0) == '"'
 				&& val.charAt(val.length() - 1) == '"') {
-			return molyConfNode.TokenType.enString;
+			return tintaConfNode.TokenType.enString;
 		}
 
 		if (val.equals("true") || val.equals("false")) {
-			return molyConfNode.TokenType.enBoolean;
+			return tintaConfNode.TokenType.enBoolean;
 		}
 
 		try {
 			Double.parseDouble(val);
-			return molyConfNode.TokenType.enNumber;
+			return tintaConfNode.TokenType.enNumber;
 		} catch (NumberFormatException e) {
 
 		}
-		return molyConfNode.TokenType.enNoType;
+		return tintaConfNode.TokenType.enNoType;
 	}
 
-	// molyConfNode::TokenType createMapData(size_t linebeg, size_t beg, size_t
+	// tintaConfNode::TokenType createMapData(size_t linebeg, size_t beg, size_t
 	// lineend,size_t end, String &rezData) const;
 
-	private void updateValueToken(ArrayList<molyConfigToken> tokens, int level,
-			molyConfNode.TokenType type, String token, int endPos) {
+	private void updateValueToken(ArrayList<tintaConfigToken> tokens, int level,
+			tintaConfNode.TokenType type, String token, int endPos) {
 		if (token.length() == 0)
 			return;
 
 		int pos = tokens.size() - 1;
 		// no value - update
 		if (tokens.size() > 0 && tokens.get(pos).mValue.length() == 0
-				&& tokens.get(pos).mType != molyConfNode.TokenType.enNode) {
+				&& tokens.get(pos).mType != tintaConfNode.TokenType.enNode) {
 
 			tokens.get(pos).mType = type;
 			tokens.get(pos).mValue = token;
@@ -1552,17 +1552,17 @@ public class molyTreeConfig {
 			//
 			// setComment(tokens.get( pos ));
 		} else { // have value - insert
-			tokens.add(new molyConfigToken(level, type, "", token,
-					endPos, ""));
+			tokens.add(new tintaConfigToken(level, type, new String(), token,
+					endPos, new String()));
 
 		}
 
 	}
 
-	private String createSaveLine(molyConfNode dataNode, String terminate) {
+	private String createSaveLine(tintaConfNode dataNode, String terminate) {
 
 		if (dataNode == null)
-			return "";
+			return new String();
 
 		String name = dataNode.mName;
 		StringBuffer msg = new StringBuffer();
@@ -1570,7 +1570,7 @@ public class molyTreeConfig {
 		for (int t = 0; t < lev; t++)
 			msg.append("\t");
 
-		if (dataNode.mDataType == molyConfNode.TokenType.enNode)
+		if (dataNode.mDataType == tintaConfNode.TokenType.enNode)
 			msg.append(name);
 		else {
 
@@ -1620,7 +1620,7 @@ public class molyTreeConfig {
 	/*
 	 * Fills vector with nodes description and data in line for saving
 	 */
-	private void fillLinesFromNodes(molyConfNode dataNode,
+	private void fillLinesFromNodes(tintaConfNode dataNode,
 			ArrayList<String> nodes, boolean last) {
 
 		if (dataNode == null)
@@ -1628,7 +1628,7 @@ public class molyTreeConfig {
 
 		int childs = dataNode.childQuantity();
 		if (dataNode.childQuantity() == 0
-				&& dataNode.mDataType != molyConfNode.TokenType.enNode) { // leaf
+				&& dataNode.mDataType != tintaConfNode.TokenType.enNode) { // leaf
 																			// node
 			nodes.add(createSaveLine(dataNode, ","));
 			return;
@@ -1636,7 +1636,7 @@ public class molyTreeConfig {
 			if (dataNode.mParent != null) { // ignore for root
 				if (dataNode.mName.length() > 0
 						|| dataNode.mComment.length() != 0)
-					nodes.add(createSaveLine(dataNode, ""));
+					nodes.add(createSaveLine(dataNode, new String()));
 
 				StringBuffer buff = new StringBuffer();
 

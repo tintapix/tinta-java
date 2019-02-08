@@ -11,16 +11,16 @@ package com.tinta.common.tintatreeconfig;
  * @author Mikhail Evdokimov
  *
  */
-public class molyConfigToken {
+public class tintaConfigToken {
 	
-	public molyConfigToken() {
+	public tintaConfigToken() {
 		mlevel = 0;
-		mType = molyConfNode.TokenType.enNoType;
+		mType = tintaConfNode.TokenType.enNoType;
 		posEnd = 0;
 	}
 
-	public molyConfigToken(int level, molyConfNode.TokenType type, String name,
-			String val, int pos, String comment) {
+	public tintaConfigToken(int level, tintaConfNode.TokenType type, String name,
+			String val, int pos, String comment ) {
 		mlevel = level;
 		mType = type;
 		mName = name;
@@ -33,7 +33,7 @@ public class molyConfigToken {
 	// multiplicity of the node 0 - first level
 	public int mlevel;
 
-	public molyConfNode.TokenType mType;
+	public tintaConfNode.TokenType mType;
 
 	public String mName = new String(); // token name like `val1` in exp. val1 = 100
 
